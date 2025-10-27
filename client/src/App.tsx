@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { ChatWidget } from "@/components/ChatWidget";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Programs from "@/pages/Programs";
@@ -38,6 +39,7 @@ function App() {
           </main>
           <Footer />
         </div>
+        <ChatWidget />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
