@@ -23,13 +23,37 @@ A Rwanda where every young person is digitally literate, ethically aware, and em
 - 500+ mentorship connections
 - 100% aligned with Rwanda NST2 and UN SDGs
 
+### Programs
+
+**1. Digital Literacy Clubs ("Ikoranabuhanga Clubs")**
+- Establish ICT clubs in 10-15 pilot schools
+- Weekly hands-on sessions on computer basics, coding, design, and digital ethics
+- Monthly Digital Challenges and innovation contests
+- Comprehensive toolkits and manuals for sustainability
+- University ICT students as peer mentors
+- **Impact**: 1,000+ students trained across Rwanda
+
+**2. ICT Career Guidance & Mentorship Program**
+- School-based ICT career days with industry speakers
+- Field visits to tech companies and innovation hubs
+- Online mentorship platform connecting students and mentors
+- Guidance on digital career pathways and entrepreneurship
+- **Impact**: 500+ students mentored and inspired toward ICT careers
+
+**3. Community Engagement & Awareness**
+- Digital Awareness Week campaigns
+- Workshops for parents and teachers
+- Community outreach events promoting responsible ICT use
+- Online safety and digital ethics education
+- **Impact**: Reaching thousands in communities across Rwanda
+
 ## ✨ Features
 
 ### Website Features
 - **6 Fully Functional Pages**
-  - Home: Hero section, impact stats, core pillars, partners
-  - About: Mission, vision, values, NST2/SDG alignment, founder profile
-  - Programs: Digital Literacy Clubs, ICT Mentorship, Community Engagement
+  - Home: Hero section, impact stats, core pillars, testimonials carousel, partners
+  - About: Mission, vision, values, NST2/SDG alignment, founder profile with quote
+  - Programs: Three comprehensive programs with detailed features, impact metrics, and expandable details
   - Get Involved: Partner, Mentor, and Volunteer opportunities with forms
   - Resources: Downloadable materials, news/events, newsletter signup
   - Contact: Contact form and information
@@ -55,12 +79,17 @@ A Rwanda where every young person is digitally literate, ethically aware, and em
 
 - **Enhanced UI/UX**
   - Smooth scroll behavior throughout the site
-  - Button hover lift effects for better interactivity
-  - Card hover animations with scale effects
+  - Multiple button animation effects (lift, scale, ripple)
+  - Card hover animations with lift and scale effects
   - Animated impact stat counters that count up when scrolled into view
+  - Hero section fade-in animations with staggered timing
+  - Page transition animations on route changes
+  - Mobile menu with slide-in animations
   - Success animations for form submissions
-  - Loading spinners with smooth transitions
-  - Respects user's reduced motion preferences for accessibility
+  - Loading spinners and skeleton loaders
+  - Comprehensive accessibility features (ARIA labels, keyboard navigation, focus indicators)
+  - Fully respects user's reduced motion preferences for accessibility
+  - Testimonials carousel with smooth navigation
 
 ### Form Integrations
 All forms are connected to backend APIs with validation:
