@@ -20,7 +20,7 @@ export default function Programs() {
         "Toolkits and manuals for sustainability",
       ],
       impact: "Over 1,000 students trained across Rwanda",
-      details: "Our Digital Literacy Clubs provide students with hands-on experience in computing fundamentals, digital tools, and creative problem-solving. Each club meets weekly for structured learning sessions that combine theory with practical application. Students work on real-world projects, participate in coding challenges, and develop presentations showcasing their learning. The program emphasizes peer-to-peer teaching, allowing advanced students to mentor their classmates and build leadership skills.",
+      details: "Our Digital Literacy Clubs serve as platforms for students to learn and practice ICT skills while fostering innovation and teamwork. We establish clubs in 10-15 pilot schools, conducting weekly hands-on sessions on computer basics, coding, design, and digital ethics. Students participate in monthly Digital Challenges and innovation contests that encourage creative problem-solving. We provide comprehensive toolkits and manuals to ensure club sustainability, and engage university ICT students as peer mentors. The program emphasizes practical application, allowing students to work on real-world projects while building both technical and leadership skills.",
     },
     {
       icon: Users,
@@ -35,7 +35,7 @@ export default function Programs() {
         "Guidance on digital entrepreneurship",
       ],
       impact: "500+ students mentored and inspired toward ICT careers",
-      details: "This program creates meaningful connections between students and working ICT professionals. Through one-on-one mentorship relationships, career exploration events, and company visits, students gain firsthand insight into technology careers. Mentors provide guidance on educational pathways, skill development, and career planning. The program also includes workshops on digital entrepreneurship, helping students understand how to create technology-based businesses and become job creators rather than just job seekers.",
+      details: "This program bridges the gap between education and employment in Rwanda's growing ICT sector by connecting students with industry leaders and professionals. We host school-based ICT career days featuring industry speakers who share their experiences and insights. Students participate in organized field visits to tech companies and innovation hubs, gaining firsthand exposure to professional work environments. Our online mentorship platform facilitates ongoing connections between students and mentors, providing guidance on digital career pathways, entrepreneurship opportunities, and skill development. The program strengthens collaboration between schools and the ICT industry, ensuring students are prepared for the future of work.",
     },
     {
       icon: Megaphone,
@@ -50,7 +50,7 @@ export default function Programs() {
         "Online safety education",
       ],
       impact: "Reaching thousands in communities across Rwanda",
-      details: "Our community engagement initiatives extend beyond students to reach parents, teachers, and community leaders. Digital Awareness Week brings together stakeholders to discuss the benefits and challenges of technology adoption. We conduct workshops on digital safety, online privacy, and ethical technology use. These sessions help communities understand how to maximize the benefits of technology while minimizing risks, ensuring that Rwanda's digital transformation is inclusive and sustainable.",
+      details: "Our community engagement initiatives promote responsible and ethical ICT use across society, extending beyond students to reach parents, teachers, and community leaders. Through Digital Awareness Week campaigns, we bring together stakeholders to discuss both the opportunities and challenges of technology adoption. We conduct specialized workshops for parents and teachers to help them understand digital tools, online safety, and how to support young people in the digital age. Our community outreach events focus on promoting inclusive technology adoption, ensuring that all members of society can participate in Rwanda's digital transformation. These initiatives help create a supportive ecosystem where young people can safely explore and excel in technology.",
     },
   ];
 
