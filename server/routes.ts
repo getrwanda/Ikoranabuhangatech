@@ -8,6 +8,7 @@ import {
   volunteerApplicationSchema 
 } from "@shared/schema";
 import { sendContactEmail } from "./email";
+import OpenAI from "openai";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/contact", async (req, res) => {
@@ -156,6 +157,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false, 
         message: "Failed to fetch contact submissions" 
       });
+    }
+  });
+
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { messages } = req.body;
+      
+      if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid request: messages array required" 
+        });
+      }
+
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      const systemPrompt = `You are a helpful AI assistant for Ikoranabuhanga Rigezweho®, a Rwandan social enterprise focused on empowering youth through digital literacy, ICT mentorship, and responsible technology use.
+
+About Ikoranabuhanga Rigezweho®:
+- Mission: Nurture a young tech-savvy community equipped with digital skills, mentorship, and ethical ICT awareness
+- Core Focus Areas:
+  1. Digital Literacy Training - Hands-on ICT skills through practical learning
+  2. ICT Career Guidance & Mentorship - Connecting students with tech professionals
+  3. Community Engagement - Promoting responsible and ethical technology use
+
+Impact:
+- 1,500+ youth empowered through ICT programs
+- 15+ partner schools
+- 500+ mentorship connections
+- Aligned with Rwanda NST2 and UN SDGs (SDG 4, 8, 9)
+
+Contact Information:
+- Founder: Joe Sure Gasore
+- Phone: +250 788 331 033
+- Email: info@ikoranabuhanga.tech
+- Location: NR24, Rwanda
+
+Your role is to:
+1. Answer questions about technology, digital literacy, and ICT education
+2. Provide information about Ikoranabuhanga Rigezweho's programs and mission
+3. Guide users on how to get involved (partner, mentor, volunteer)
+4. Share insights about Rwanda's digital transformation and NST2 goals
+5. Be friendly, professional, and inspiring
+
+Always be helpful, accurate, and supportive of youth empowerment through technology.`;
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages
+        ],
+        stream: true,
+        temperature: 0.7,
+        max_tokens: 1000,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          res.write(`data: ${JSON.stringify({ content })}\n\n`);
+        }
+      }
+
+      res.write('data: [DONE]\n\n');
+      res.end();
+      
+    } catch (error) {
+      console.error("Chat error:", error);
+      
+      if (!res.headersSent) {
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to process chat request" 
+        });
+      } else {
+        res.end();
+      }
     }
   });
 
