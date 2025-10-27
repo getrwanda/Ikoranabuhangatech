@@ -15,7 +15,7 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! I'm here to help you learn about technology and Ikoranabuhanga Rigezweho®. How can I assist you today?",
+      content: "Hello! I'm Joesure, your AI assistant for Ikoranabuhanga Rigezweho®. I'm here to help you learn about technology, our programs, and how you can get involved. How can I assist you today?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -133,21 +133,22 @@ export function ChatWidget() {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all z-50 bg-primary hover:bg-primary/90"
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all z-[9999] bg-primary hover:bg-primary/90"
           size="icon"
+          style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem' }}
         >
           <MessageCircle className="h-6 w-6" />
         </Button>
       )}
 
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 w-96 h-[600px] shadow-2xl z-50 flex flex-col">
+        <Card className="fixed bottom-6 right-6 w-96 h-[600px] shadow-2xl z-[9999] flex flex-col max-sm:w-[calc(100vw-2rem)] max-sm:h-[calc(100vh-2rem)]" style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem' }}>
           <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
               <div>
-                <h3 className="font-semibold">Tech Assistant</h3>
-                <p className="text-xs opacity-90">Ask about technology & our programs</p>
+                <h3 className="font-semibold">Joesure</h3>
+                <p className="text-xs opacity-90">Your AI Tech Assistant</p>
               </div>
             </div>
             <Button
@@ -200,7 +201,7 @@ export function ChatWidget() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask about technology..."
+                placeholder="Ask Joesure anything..."
                 disabled={isLoading}
                 className="flex-1"
               />
