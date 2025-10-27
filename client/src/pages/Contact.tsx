@@ -162,7 +162,7 @@ export default function Contact() {
                       <Button
                         type="submit"
                         size="lg"
-                        className="w-full gap-2"
+                        className="w-full gap-2 btn-hover-lift"
                         disabled={submitMutation.isPending}
                         data-testid="button-send-message"
                       >

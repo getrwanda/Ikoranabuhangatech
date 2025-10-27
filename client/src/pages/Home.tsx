@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,14 +6,64 @@ import { Badge } from "@/components/ui/badge";
 import { ImigongoPattern, ImigongoAccent } from "@/components/ImigongoPattern";
 import { BookOpen, Users, Megaphone, ArrowRight, TrendingUp, School, Award } from "lucide-react";
 
+function AnimatedCounter({ value, suffix = "", duration = 2000 }: { value: number; suffix?: string; duration?: number }) {
+  const [count, setCount] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const counterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isVisible) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (counterRef.current) {
+      observer.observe(counterRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const start = 0;
+    const end = value;
+    const increment = end / (duration / 16); // 60fps
+    let current = start;
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= end) {
+        setCount(end);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(current));
+      }
+    }, 16);
+
+    return () => clearInterval(timer);
+  }, [isVisible, value, duration]);
+
+  return (
+    <div ref={counterRef} className="font-display font-bold text-4xl md:text-5xl text-primary mb-2">
+      {count.toLocaleString()}{suffix}
+    </div>
+  );
+}
+
 export default function Home() {
   const [currentPartner, setCurrentPartner] = useState(0);
   
   const stats = [
-    { number: "1,500+", label: "Youth Empowered", icon: Users },
-    { number: "15+", label: "Partner Schools", icon: School },
-    { number: "500+", label: "Mentorship Connections", icon: Award },
-    { number: "100%", label: "NST2 & SDG Aligned", icon: TrendingUp },
+    { number: 1500, suffix: "+", label: "Youth Empowered", icon: Users },
+    { number: 15, suffix: "+", label: "Partner Schools", icon: School },
+    { number: 500, suffix: "+", label: "Mentorship Connections", icon: Award },
+    { number: 100, suffix: "%", label: "NST2 & SDG Aligned", icon: TrendingUp },
   ];
 
   const pillars = [
@@ -60,7 +110,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/get-involved">
-                <Button size="lg" variant="secondary" className="text-lg px-8 py-6 min-h-14 gap-2" data-testid="button-join-mission">
+                <Button size="lg" variant="secondary" className="text-lg px-8 py-6 min-h-14 gap-2 btn-hover-lift" data-testid="button-join-mission">
                   Join Our Mission
                   <ArrowRight className="h-5 w-5" />
                 </Button>
@@ -68,7 +118,7 @@ export default function Home() {
               <Link href="/get-involved">
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-6 min-h-14 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white hover:bg-white/20" 
+                  className="text-lg px-8 py-6 min-h-14 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white hover:bg-white/20 btn-hover-lift" 
                   data-testid="button-partner"
                 >
                   Partner With Us
@@ -106,9 +156,9 @@ export default function Home() {
             {pillars.map((pillar, index) => {
               const Icon = pillar.icon;
               return (
-                <Card key={index} className="hover-elevate active-elevate-2 transition-all duration-300 border-2" data-testid={`card-pillar-${index}`}>
+                <Card key={index} className="hover-elevate active-elevate-2 card-hover-scale transition-all duration-300 border-2 cursor-pointer" data-testid={`card-pillar-${index}`}>
                   <CardContent className="p-8">
-                    <div className={`${pillar.color} mb-4`}>
+                    <div className={`${pillar.color} mb-4 transition-transform duration-300 hover:scale-110`}>
                       <Icon className="h-12 w-12" />
                     </div>
                     <h3 className="font-heading font-semibold text-xl mb-3 text-foreground">
@@ -138,13 +188,11 @@ export default function Home() {
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <Card key={index} className="text-center border-2 relative overflow-hidden" data-testid={`card-stat-${index}`}>
+                <Card key={index} className="text-center border-2 relative overflow-hidden hover-elevate transition-all duration-300" data-testid={`card-stat-${index}`}>
                   <ImigongoPattern opacity={0.03} />
                   <CardContent className="p-8 relative z-10">
                     <Icon className="h-8 w-8 text-accent mx-auto mb-4" />
-                    <div className="font-display font-bold text-4xl md:text-5xl text-primary mb-2">
-                      {stat.number}
-                    </div>
+                    <AnimatedCounter value={stat.number} suffix={stat.suffix} duration={2000} />
                     <div className="text-sm font-medium text-muted-foreground">
                       {stat.label}
                     </div>

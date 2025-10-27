@@ -53,6 +53,15 @@ A Rwanda where every young person is digitally literate, ethically aware, and em
   - Provides guidance on getting involved
   - Streaming responses for real-time interaction
 
+- **Enhanced UI/UX**
+  - Smooth scroll behavior throughout the site
+  - Button hover lift effects for better interactivity
+  - Card hover animations with scale effects
+  - Animated impact stat counters that count up when scrolled into view
+  - Success animations for form submissions
+  - Loading spinners with smooth transitions
+  - Respects user's reduced motion preferences for accessibility
+
 ### Form Integrations
 All forms are connected to backend APIs with validation:
 - Contact form (general inquiries)
