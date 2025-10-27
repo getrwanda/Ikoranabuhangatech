@@ -244,6 +244,15 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background rounded-sm;
+  }
 }
 
 /* Enhanced Button Animations and Hover Effects */
@@ -260,12 +269,56 @@
     @apply translate-y-0 shadow-md;
   }
 
+  .btn-scale {
+    @apply transition-transform duration-200 ease-out;
+  }
+
+  .btn-scale:hover {
+    @apply scale-105;
+  }
+
+  .btn-scale:active {
+    @apply scale-95;
+  }
+
+  .btn-ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .btn-ripple:active::after {
+    width: 300px;
+    height: 300px;
+    transition: width 0s, height 0s;
+  }
+
   .card-hover-scale {
     @apply transition-all duration-300 ease-out;
   }
 
   .card-hover-scale:hover {
     @apply scale-105;
+  }
+
+  .card-hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .card-hover-lift:hover {
+    @apply -translate-y-2 shadow-xl;
   }
 
   .fade-in {
@@ -293,6 +346,47 @@
     from {
       opacity: 0;
       transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .mobile-nav-item {
+    animation: slideInLeft 0.3s ease-out backwards;
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .page-transition-enter {
+    animation: pageEnter 0.3s ease-out;
+  }
+
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
     }
     to {
       opacity: 1;
@@ -338,22 +432,34 @@
     }
 
     .btn-hover-lift,
+    .btn-scale,
+    .btn-ripple,
     .card-hover-scale,
+    .card-hover-lift,
     .fade-in,
     .slide-up,
     .pulse-slow,
     .success-bounce,
-    .progress-bar {
+    .progress-bar,
+    .page-transition-enter,
+    .mobile-nav-item,
+    .animate-in,
+    [class*="slide-in"],
+    [class*="fade-in"],
+    [class*="zoom-in"] {
       animation: none !important;
       transition: none !important;
     }
 
-    .btn-hover-lift:hover {
+    .btn-hover-lift:hover,
+    .btn-scale:hover,
+    .card-hover-scale:hover,
+    .card-hover-lift:hover {
       transform: none !important;
     }
 
-    .card-hover-scale:hover {
-      transform: none !important;
+    .btn-ripple::after {
+      display: none !important;
     }
   }
 }

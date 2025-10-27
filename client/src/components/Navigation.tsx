@@ -38,14 +38,20 @@ export function Navigation() {
           ? 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm'
           : 'bg-background'
       }`}
+      role="banner"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 hover-elevate active-elevate-2 rounded-md px-2 py-1 -ml-2" data-testid="link-home">
-            <img src={logoUrl} alt="Ikoranabuhanga Rigezweho" className="h-10 w-auto" />
+          <Link 
+            href="/" 
+            className="flex items-center gap-3 hover-elevate active-elevate-2 rounded-md px-2 py-1 -ml-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
+            data-testid="link-home"
+            aria-label="Ikoranabuhanga Rigezweho - Home"
+          >
+            <img src={logoUrl} alt="Ikoranabuhanga Rigezweho Logo" className="h-10 w-auto" />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
             {navLinks.map((link) => (
               <Link key={link.path} href={link.path}>
                 <Button
@@ -68,39 +74,45 @@ export function Navigation() {
               variant="ghost"
               size="sm"
               onClick={toggleLanguage}
-              className="gap-2"
+              className="gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               data-testid="button-language-toggle"
+              aria-label={`Switch language to ${language === 'EN' ? 'Kinyarwanda' : 'English'}`}
             >
-              <Globe className="h-4 w-4" />
+              <Globe className="h-4 w-4" aria-hidden="true" />
               <span className="text-sm font-medium">{language}</span>
             </Button>
 
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               onClick={() => setIsOpen(!isOpen)}
               data-testid="button-menu-toggle"
+              aria-label={isOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isOpen}
             >
-              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
             </Button>
           </div>
         </div>
 
         {isOpen && (
-          <div className="md:hidden border-t py-4">
-            <nav className="flex flex-col gap-2">
-              {navLinks.map((link) => (
+          <div className="md:hidden border-t py-4 animate-in slide-in-from-top-4 duration-300">
+            <nav className="flex flex-col gap-2" aria-label="Mobile navigation">
+              {navLinks.map((link, index) => (
                 <Link key={link.path} href={link.path}>
                   <Button
                     variant="ghost"
-                    className={`w-full justify-start ${
+                    className={`w-full justify-start transition-all duration-200 mobile-nav-item ${
                       location === link.path
                         ? 'bg-secondary text-primary'
                         : 'text-foreground/80'
                     }`}
                     onClick={() => setIsOpen(false)}
                     data-testid={`mobile-link-${link.label.toLowerCase().replace(' ', '-')}`}
+                    style={{
+                      animationDelay: `${index * 50}ms`,
+                    }}
                   >
                     {link.label}
                   </Button>

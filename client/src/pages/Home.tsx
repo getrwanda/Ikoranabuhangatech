@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ImigongoPattern, ImigongoAccent } from "@/components/ImigongoPattern";
+import { Testimonials } from "@/components/Testimonials";
 import { BookOpen, Users, Megaphone, ArrowRight, TrendingUp, School, Award } from "lucide-react";
 
 function AnimatedCounter({ value, suffix = "", duration = 2000 }: { value: number; suffix?: string; duration?: number }) {
@@ -102,13 +103,22 @@ export default function Home() {
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="font-heading font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white mb-6 leading-tight">
+            <h1 
+              className="font-heading font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white mb-6 leading-tight fade-in"
+              style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}
+            >
               Building Rwanda's Future through Digital Literacy and Mentorship
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 leading-relaxed max-w-3xl mx-auto">
+            <p 
+              className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 leading-relaxed max-w-3xl mx-auto fade-in"
+              style={{ animationDelay: '0.4s', animationFillMode: 'backwards' }}
+            >
               We aim to nurture a young tech-savvy community by empowering Rwandan youth with digital skills, mentorship, and ethical ICT values.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div 
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center fade-in"
+              style={{ animationDelay: '0.6s', animationFillMode: 'backwards' }}
+            >
               <Link href="/get-involved">
                 <Button size="lg" variant="secondary" className="text-lg px-8 py-6 min-h-14 gap-2 btn-hover-lift" data-testid="button-join-mission">
                   Join Our Mission
@@ -204,21 +214,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-secondary relative overflow-hidden">
-        <ImigongoPattern opacity={0.05} />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="mb-8">
-              <svg className="h-12 w-12 text-primary mx-auto" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-              </svg>
-            </div>
-            <blockquote className="font-heading text-2xl sm:text-3xl md:text-4xl font-medium text-foreground italic leading-relaxed">
-              "We aim to nurture a young tech-savvy community ready to innovate, lead, and transform Rwanda."
-            </blockquote>
-          </div>
-        </div>
-      </section>
+      <Testimonials />
 
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
