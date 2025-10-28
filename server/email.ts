@@ -1,3 +1,5 @@
+import { getUncachableResendClient } from './resend';
+
 interface EmailData {
   name: string;
   email: string;
@@ -31,10 +33,20 @@ ${message}
 Sent from www.ikoranabuhanga.tech
   `.trim();
 
-  console.log("Email would be sent to: info@ikoranabuhanga.tech");
-  console.log("Subject:", subject);
-  console.log("Body:", emailBody);
-  console.log("Reply-to:", email);
-  
-  await new Promise(resolve => setTimeout(resolve, 500));
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    
+    await client.emails.send({
+      from: fromEmail,
+      to: 'info@ikoranabuhanga.tech',
+      replyTo: email,
+      subject: subject,
+      text: emailBody,
+    });
+    
+    console.log(`Email sent successfully to info@ikoranabuhanga.tech - ${typeLabels[type]} from ${name}`);
+  } catch (error) {
+    console.error("Failed to send email:", error);
+    throw error;
+  }
 }
