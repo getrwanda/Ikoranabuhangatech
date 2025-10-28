@@ -385,9 +385,10 @@ MIT License - See LICENSE file for details
 
 ### October 28, 2025
 - ✅ Added YouTube channel embeds to Home and Resources pages
-- ✅ Enhanced AI Assistant (Joesure) error handling with specific messages
+- ✅ Enhanced AI Assistant (Joesure) error handling with specific messages for quota exceeded, server errors, and network issues
+- ✅ Fixed critical bug: AI Assistant now properly detects 429 status codes for quota errors
 - ✅ Linked Concept Note document to download button on Resources page
 - ✅ Improved contact form error messages with detailed feedback
-- ✅ Updated comprehensive system prompt for AI Assistant with all program details
-- ✅ Added migration from Replit Agent to standard Replit environment
+- ✅ Updated comprehensive system prompt for AI Assistant with all program details from concept note
+- ✅ Completed migration from Replit Agent to standard Replit environment
 - ✅ Added test IDs to buttons for better testing support
