@@ -164,6 +164,50 @@ export default function Resources() {
 
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="font-heading font-bold text-3xl sm:text-4xl text-foreground mb-4">
+              Videos & Activities
+            </h2>
+            <ImigongoAccent className="w-24 mx-auto mb-6" />
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Watch our programs in action and see the impact of digital literacy and mentorship
+            </p>
+          </div>
+
+          <div className="max-w-6xl mx-auto">
+            <Card className="border-2 overflow-hidden">
+              <CardContent className="p-0">
+                <div className="aspect-video w-full">
+                  <iframe
+                    className="w-full h-full"
+                    src="https://www.youtube.com/embed/videoseries?list=UUFsQPyykV-_Yqe7yfocaisA"
+                    title="Ikoranabuhanga Rigezweho YouTube Channel"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <div className="text-center mt-6">
+              <a 
+                href="https://www.youtube.com/channel/UCFsQPyykV-_Yqe7yfocaisA" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" className="gap-2" data-testid="button-youtube-channel">
+                  Visit Our YouTube Channel
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 md:py-24 bg-secondary">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="max-w-4xl mx-auto border-2 bg-gradient-to-br from-primary/5 to-accent/5 relative overflow-hidden">
             <ImigongoPattern opacity={0.03} />
             <CardContent className="p-8 md:p-12 relative z-10 text-center">

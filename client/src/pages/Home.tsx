@@ -214,6 +214,46 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="py-16 md:py-24 bg-secondary">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="font-heading font-bold text-3xl sm:text-4xl text-foreground mb-4">
+              See Our Programs in Action
+            </h2>
+            <ImigongoAccent className="w-24 mx-auto mb-6" />
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Watch how we're empowering Rwandan youth through digital literacy and mentorship
+            </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto">
+            <Card className="border-2 overflow-hidden hover-elevate transition-all duration-300">
+              <CardContent className="p-0">
+                <div className="aspect-video w-full">
+                  <iframe
+                    className="w-full h-full"
+                    src="https://www.youtube.com/embed/videoseries?list=UUFsQPyykV-_Yqe7yfocaisA"
+                    title="Ikoranabuhanga Rigezweho Programs"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <div className="text-center mt-8">
+              <Link href="/resources">
+                <Button size="lg" variant="outline" className="gap-2" data-testid="button-view-more-videos">
+                  View More Videos & Resources
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Testimonials />
 
       <section className="py-16 md:py-24 bg-background">
