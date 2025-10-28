@@ -9,30 +9,38 @@ export default function Resources() {
     {
       title: "Concept Note",
       description: "Comprehensive overview of our mission, programs, and impact strategy",
-      type: "PDF",
-      size: "2.4 MB",
+      type: "DOCX",
+      size: "145 KB",
       icon: FileText,
+      downloadUrl: "/attached_assets/Ikoranabuhanga_Rigezweho_Concept_Note_1761610787845.docx",
+      available: true,
     },
     {
       title: "Executive Summary",
       description: "One-page overview of Ikoranabuhanga Rigezweho® initiatives",
       type: "PDF",
-      size: "850 KB",
+      size: "Coming Soon",
       icon: FileText,
+      downloadUrl: null,
+      available: false,
     },
     {
       title: "Program Reports",
       description: "Detailed reports on our digital literacy and mentorship programs",
       type: "PDF",
-      size: "3.1 MB",
+      size: "Coming Soon",
       icon: FileText,
+      downloadUrl: null,
+      available: false,
     },
     {
       title: "Digital Literacy Toolkits",
       description: "Training materials and resources for educators and mentors",
       type: "ZIP",
-      size: "12.5 MB",
+      size: "Coming Soon",
       icon: FileText,
+      downloadUrl: null,
+      available: false,
     },
   ];
 
@@ -113,10 +121,24 @@ export default function Resources() {
                   </CardHeader>
                   <CardContent className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">{doc.size}</span>
-                    <Button className="gap-2" data-testid={`button-download-${index}`}>
-                      <Download className="h-4 w-4" />
-                      Download
-                    </Button>
+                    {doc.available ? (
+                      <a href={doc.downloadUrl!} download>
+                        <Button className="gap-2" data-testid={`button-download-${index}`}>
+                          <Download className="h-4 w-4" />
+                          Download
+                        </Button>
+                      </a>
+                    ) : (
+                      <Button 
+                        className="gap-2" 
+                        disabled 
+                        variant="outline"
+                        data-testid={`button-download-${index}`}
+                      >
+                        <Download className="h-4 w-4" />
+                        Coming Soon
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               );

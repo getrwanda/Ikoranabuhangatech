@@ -51,12 +51,12 @@ A Rwanda where every young person is digitally literate, ethically aware, and em
 
 ### Website Features
 - **6 Fully Functional Pages**
-  - Home: Hero section, impact stats, core pillars, testimonials carousel, partners
+  - Home: Hero section, impact stats, core pillars, featured YouTube videos, testimonials carousel, partners
   - About: Mission, vision, values, NST2/SDG alignment, founder profile with quote
   - Programs: Three comprehensive programs with detailed features, impact metrics, and expandable details
   - Get Involved: Partner, Mentor, and Volunteer opportunities with forms
-  - Resources: Downloadable materials, news/events, newsletter signup
-  - Contact: Contact form and information
+  - Resources: Downloadable materials, YouTube channel embed with latest videos, news/events, newsletter signup
+  - Contact: Contact form with enhanced error handling and information
 
 - **Authentic Rwandan Design**
   - Imigongo geometric patterns integrated throughout
@@ -71,11 +71,19 @@ A Rwanda where every young person is digitally literate, ethically aware, and em
   - Language toggle in place (English/Kinyarwanda)
   - Content translation can be added easily
 
+- **Video Content Integration**
+  - YouTube channel embedded on Home and Resources pages
+  - Automatic display of latest program videos
+  - Direct link to YouTube channel for more content
+  - Showcase of digital literacy clubs, mentorship sessions, and events
+
 - **AI Assistant - Joesure**
   - Interactive chat widget powered by OpenAI
   - Answers questions about technology and programs
   - Provides guidance on getting involved
   - Streaming responses for real-time interaction
+  - Enhanced error handling with specific messages for different error types
+  - Graceful fallback when API quota is exceeded
 
 - **Enhanced UI/UX**
   - Smooth scroll behavior throughout the site
@@ -92,11 +100,20 @@ A Rwanda where every young person is digitally literate, ethically aware, and em
   - Testimonials carousel with smooth navigation
 
 ### Form Integrations
-All forms are connected to backend APIs with validation:
-- Contact form (general inquiries)
+All forms are connected to backend APIs with enhanced validation and error handling:
+- Contact form (general inquiries) with improved error messages
 - Partnership inquiry form
 - Mentor application form
 - Volunteer interest form
+- Real-time validation using Zod schemas
+- User-friendly error feedback for all form submissions
+
+### Download Center
+- Concept Note available for download (DOCX format)
+- Executive Summary (coming soon)
+- Program Reports (coming soon)
+- Digital Literacy Toolkits (coming soon)
+- "Coming Soon" state for unavailable documents
 
 ## 🛠️ Tech Stack
 
@@ -343,7 +360,7 @@ The website features Joesure, an AI-powered assistant that helps visitors:
 **Social Media**
 - Facebook: [Add link]
 - LinkedIn: [Add link]
-- YouTube: [Add link]
+- YouTube: [https://www.youtube.com/channel/UCFsQPyykV-_Yqe7yfocaisA](https://www.youtube.com/channel/UCFsQPyykV-_Yqe7yfocaisA)
 - X (Twitter): [Add link]
 
 ## 📄 License
@@ -362,4 +379,15 @@ MIT License - See LICENSE file for details
 
 **Built with ❤️ for Rwanda's digital future**
 
-*Last Updated: January 27, 2025*
+*Last Updated: October 28, 2025*
+
+## 🆕 Recent Updates
+
+### October 28, 2025
+- ✅ Added YouTube channel embeds to Home and Resources pages
+- ✅ Enhanced AI Assistant (Joesure) error handling with specific messages
+- ✅ Linked Concept Note document to download button on Resources page
+- ✅ Improved contact form error messages with detailed feedback
+- ✅ Updated comprehensive system prompt for AI Assistant with all program details
+- ✅ Added migration from Replit Agent to standard Replit environment
+- ✅ Added test IDs to buttons for better testing support

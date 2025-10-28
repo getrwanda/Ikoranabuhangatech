@@ -45,10 +45,11 @@ export default function Contact() {
       });
       form.reset();
     },
-    onError: () => {
+    onError: (error: any) => {
+      const errorMessage = error?.message || "Failed to send message. Please check your connection and try again.";
       toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
+        title: "Unable to Send Message",
+        description: errorMessage,
         variant: "destructive",
       });
     },

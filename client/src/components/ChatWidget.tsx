@@ -57,7 +57,22 @@ export function ChatWidget() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get response");
+        let errorMessage = "Failed to get response";
+        
+        if (response.status === 429) {
+          errorMessage = "quota_exceeded";
+        } else if (response.status >= 500) {
+          errorMessage = "server_error";
+        } else {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch {
+            // If we can't parse error, use default
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const reader = response.body?.getReader();
@@ -106,11 +121,22 @@ export function ChatWidget() {
         console.log("Request aborted");
       } else {
         console.error("Chat error:", error);
+        
+        let errorMessage = "Sorry, I encountered an error. Please try again.";
+        
+        if (error.message === "quota_exceeded" || error.message?.includes("quota") || error.message?.includes("429")) {
+          errorMessage = "The AI Assistant is temporarily unavailable due to usage limits. Please contact us directly at info@ikoranabuhanga.tech or call +250 788 331 033 for immediate assistance.";
+        } else if (error.message === "server_error") {
+          errorMessage = "Our servers are experiencing issues. Please try again in a few moments or contact us directly.";
+        } else if (error.message?.includes("network") || error.message?.includes("fetch") || error.name === "TypeError") {
+          errorMessage = "Unable to connect. Please check your internet connection and try again.";
+        }
+        
         setMessages((prev) => {
           const newMessages = [...prev];
           newMessages[newMessages.length - 1] = {
             role: "assistant",
-            content: "Sorry, I encountered an error. Please try again.",
+            content: errorMessage,
           };
           return newMessages;
         });
