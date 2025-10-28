@@ -9,6 +9,7 @@ import { ChatWidget } from "@/components/ChatWidget";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Programs from "@/pages/Programs";
+import Events from "@/pages/Events";
 import GetInvolved from "@/pages/GetInvolved";
 import Resources from "@/pages/Resources";
 import Contact from "@/pages/Contact";
@@ -23,6 +24,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/about" component={About} />
         <Route path="/programs" component={Programs} />
+        <Route path="/events" component={Events} />
         <Route path="/get-involved" component={GetInvolved} />
         <Route path="/resources" component={Resources} />
         <Route path="/contact" component={Contact} />

@@ -1,4 +1,4 @@
-import { users, contactSubmissions, events, type User, type InsertUser, type Contact, type InsertContact, type Event, type InsertEvent } from "@shared/schema";
+import { users, contactSubmissions, events, eventRegistrations, type User, type InsertUser, type Contact, type InsertContact, type Event, type InsertEvent, type EventRegistration, type InsertEventRegistration } from "@shared/schema";
 import { db } from "./db";
 import { eq, gte, sql, asc } from "drizzle-orm";
 
@@ -12,6 +12,10 @@ export interface IStorage {
   getEvents(): Promise<Event[]>;
   getEvent(id: string): Promise<Event | undefined>;
   getUpcomingEvents(): Promise<Event[]>;
+  createEventRegistration(registration: InsertEventRegistration): Promise<EventRegistration>;
+  getEventRegistrations(eventId: string): Promise<EventRegistration[]>;
+  incrementEventRegisteredCount(eventId: string): Promise<boolean>;
+  decrementEventRegisteredCount(eventId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -68,6 +72,39 @@ export class DatabaseStorage implements IStorage {
       .from(events)
       .where(gte(events.date, sql`CURRENT_DATE`))
       .orderBy(asc(events.date), asc(events.title));
+  }
+
+  async createEventRegistration(insertRegistration: InsertEventRegistration): Promise<EventRegistration> {
+    const [registration] = await db
+      .insert(eventRegistrations)
+      .values(insertRegistration)
+      .returning();
+    return registration;
+  }
+
+  async getEventRegistrations(eventId: string): Promise<EventRegistration[]> {
+    return await db
+      .select()
+      .from(eventRegistrations)
+      .where(eq(eventRegistrations.eventId, eventId))
+      .orderBy(asc(eventRegistrations.createdAt));
+  }
+
+  async incrementEventRegisteredCount(eventId: string): Promise<boolean> {
+    const result = await db
+      .update(events)
+      .set({ registeredCount: sql`${events.registeredCount} + 1` })
+      .where(sql`${events.id} = ${eventId} AND ${events.registeredCount} < ${events.capacity}`)
+      .returning({ id: events.id });
+    
+    return result.length > 0;
+  }
+
+  async decrementEventRegisteredCount(eventId: string): Promise<void> {
+    await db
+      .update(events)
+      .set({ registeredCount: sql`${events.registeredCount} - 1` })
+      .where(eq(events.id, eventId));
   }
 }
 

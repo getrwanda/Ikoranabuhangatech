@@ -22,6 +22,7 @@ export function Navigation() {
     { path: '/', label: 'Home' },
     { path: '/about', label: 'About' },
     { path: '/programs', label: 'Programs' },
+    { path: '/events', label: 'Events' },
     { path: '/get-involved', label: 'Get Involved' },
     { path: '/resources', label: 'Resources' },
     { path: '/contact', label: 'Contact' },

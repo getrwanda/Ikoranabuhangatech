@@ -5,9 +5,10 @@ import {
   insertContactSchema, 
   mentorApplicationSchema,
   partnerInquirySchema,
-  volunteerApplicationSchema 
+  volunteerApplicationSchema,
+  insertEventRegistrationSchema
 } from "@shared/schema";
-import { sendContactEmail } from "./email";
+import { sendContactEmail, sendEventRegistrationEmail } from "./email";
 import OpenAI from "openai";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -157,6 +158,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false, 
         message: "Failed to fetch contact submissions" 
       });
+    }
+  });
+
+  app.get("/api/events", async (req, res) => {
+    try {
+      const events = await storage.getEvents();
+      res.json({ success: true, data: events });
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch events" 
+      });
+    }
+  });
+
+  app.get("/api/events/upcoming", async (req, res) => {
+    try {
+      const events = await storage.getUpcomingEvents();
+      res.json({ success: true, data: events });
+    } catch (error) {
+      console.error("Error fetching upcoming events:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch upcoming events" 
+      });
+    }
+  });
+
+  app.get("/api/events/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const event = await storage.getEvent(id);
+      
+      if (!event) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Event not found" 
+        });
+      }
+      
+      res.json({ success: true, data: event });
+    } catch (error) {
+      console.error("Error fetching event:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch event" 
+      });
+    }
+  });
+
+  app.post("/api/events/:id/register", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const event = await storage.getEvent(id);
+      if (!event) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Event not found" 
+        });
+      }
+
+      const validatedData = insertEventRegistrationSchema.parse({
+        ...req.body,
+        eventId: id
+      });
+
+      const incrementSuccess = await storage.incrementEventRegisteredCount(id);
+
+      if (!incrementSuccess) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Event is full" 
+        });
+      }
+
+      let registration;
+      try {
+        registration = await storage.createEventRegistration(validatedData);
+      } catch (registrationError) {
+        console.error("Failed to create registration record, decrementing count:", registrationError);
+        await storage.decrementEventRegisteredCount(id);
+        throw registrationError;
+      }
+
+      const updatedEvent = await storage.getEvent(id);
+
+      try {
+        await sendEventRegistrationEmail({
+          registration: validatedData,
+          event: updatedEvent || event
+        });
+      } catch (emailError) {
+        console.error("Failed to send confirmation email, but registration succeeded:", emailError);
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Registration successful",
+        id: registration.id 
+      });
+    } catch (error) {
+      console.error("Event registration error:", error);
+      
+      if (error instanceof Error && error.name === "ZodError") {
+        res.status(400).json({ 
+          success: false, 
+          message: "Invalid registration data",
+          errors: error 
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to process event registration" 
+        });
+      }
     }
   });
 
