@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -15,6 +15,28 @@ export const contactSubmissions = pgTable("contact_submissions", {
   email: text("email").notNull(),
   message: text("message").notNull(),
   type: text("type").notNull(), // 'contact', 'mentor', 'partner', 'volunteer'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const events = pgTable("events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // 'digital-literacy', 'mentorship', 'community-engagement'
+  date: timestamp("date").notNull(),
+  location: text("location").notNull(),
+  capacity: integer("capacity").notNull(),
+  registeredCount: integer("registered_count").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const eventRegistrations = pgTable("event_registrations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventId: varchar("event_id").notNull().references(() => events.id),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  organization: text("organization"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -40,6 +62,17 @@ export const volunteerApplicationSchema = insertContactSchema.extend({
   type: z.literal("volunteer"),
 });
 
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  createdAt: true,
+  registeredCount: true,
+});
+
+export const insertEventRegistrationSchema = createInsertSchema(eventRegistrations).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertContact = z.infer<typeof insertContactSchema>;
@@ -47,3 +80,7 @@ export type Contact = typeof contactSubmissions.$inferSelect;
 export type MentorApplication = z.infer<typeof mentorApplicationSchema>;
 export type PartnerInquiry = z.infer<typeof partnerInquirySchema>;
 export type VolunteerApplication = z.infer<typeof volunteerApplicationSchema>;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type Event = typeof events.$inferSelect;
+export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSchema>;
+export type EventRegistration = typeof eventRegistrations.$inferSelect;

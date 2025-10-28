@@ -23,9 +23,10 @@ Modern, responsive, and bilingual-ready website for Ikoranabuhanga Rigezweho®, 
 - **Styling**: Tailwind CSS with custom design tokens
 - **UI Components**: Shadcn UI components
 - **Backend**: Express.js with TypeScript
+- **Database**: PostgreSQL (via Neon) with Drizzle ORM
+- **Email**: Resend for transactional emails
 - **Forms**: React Hook Form with Zod validation
 - **Data Fetching**: TanStack Query (React Query v5)
-- **Storage**: In-memory storage (MemStorage)
 
 ## Design System
 ### Colors
@@ -92,6 +93,9 @@ Forms send data to `/api/contact` endpoint which forwards to `info@ikoranabuhang
 - 500+ mentorship connections
 - 100% aligned with NST2 and UN SDGs
 
+## Current Development
+- Event Calendar & Registration System (In Progress)
+
 ## Future Enhancements
 - Full bilingual content implementation (English + Kinyarwanda)
 - Mentor dashboard for matching students and ICT professionals
@@ -99,3 +103,8 @@ Forms send data to `/api/contact` endpoint which forwards to `info@ikoranabuhang
 - Newsletter automation
 - Analytics integration
 - Payment gateway for donations
+
+## Recent Completion
+- PostgreSQL database integration for form persistence
+- Resend email service for form submission notifications
+- Production-ready contact, mentor, partner, and volunteer forms

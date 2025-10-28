@@ -130,7 +130,8 @@ All forms are connected to backend APIs with enhanced validation and error handl
 ### Backend
 - **Runtime**: Node.js 20
 - **Framework**: Express.js with TypeScript
-- **Storage**: In-memory storage (MemStorage)
+- **Database**: PostgreSQL (via Neon) with Drizzle ORM
+- **Email Service**: Resend for transactional emails
 - **AI Integration**: OpenAI GPT-4o-mini
 - **Development**: tsx for TypeScript execution
 
@@ -336,6 +337,10 @@ The website features Joesure, an AI-powered assistant that helps visitors:
 
 ## 🔮 Future Enhancements
 
+### In Progress
+- [🚧] Event calendar and registration system
+
+### Planned
 - [ ] Full bilingual content implementation (English + Kinyarwanda)
 - [ ] Mentor dashboard for matching students and ICT professionals
 - [ ] Blog content management system
@@ -343,7 +348,6 @@ The website features Joesure, an AI-powered assistant that helps visitors:
 - [ ] Analytics integration (Google Analytics, Plausible)
 - [ ] Payment gateway for donations
 - [ ] Student portal for program registration
-- [ ] Event calendar and booking system
 - [ ] Success stories and testimonials section
 - [ ] Video content library
 - [ ] Social media feed integration
@@ -392,3 +396,6 @@ MIT License - See LICENSE file for details
 - ✅ Updated comprehensive system prompt for AI Assistant with all program details from concept note
 - ✅ Completed migration from Replit Agent to standard Replit environment
 - ✅ Added test IDs to buttons for better testing support
+- ✅ Upgraded forms to production-ready with PostgreSQL database persistence
+- ✅ Integrated Resend for real email notifications on form submissions
+- 🚧 Building Event Calendar & Registration System for program management
