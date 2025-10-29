@@ -114,7 +114,7 @@ Email: ${email}
 Phone: ${registration.phone || 'Not provided'}
 Organization: ${registration.organization || 'Not provided'}
 
-Current Registrations: ${event.registeredCount + 1}/${event.capacity}
+Current Registrations: ${event.registeredCount}/${event.capacity}
 
 ---
 Sent from www.ikoranabuhanga.tech
