@@ -13,6 +13,8 @@ import Events from "@/pages/Events";
 import GetInvolved from "@/pages/GetInvolved";
 import Resources from "@/pages/Resources";
 import Contact from "@/pages/Contact";
+import Blog from "@/pages/Blog";
+import BlogPost from "@/pages/BlogPost";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,6 +27,8 @@ function Router() {
         <Route path="/about" component={About} />
         <Route path="/programs" component={Programs} />
         <Route path="/events" component={Events} />
+        <Route path="/blog/:slug" component={BlogPost} />
+        <Route path="/blog" component={Blog} />
         <Route path="/get-involved" component={GetInvolved} />
         <Route path="/resources" component={Resources} />
         <Route path="/contact" component={Contact} />

@@ -1,6 +1,6 @@
-import { users, contactSubmissions, events, eventRegistrations, type User, type InsertUser, type Contact, type InsertContact, type Event, type InsertEvent, type EventRegistration, type InsertEventRegistration } from "@shared/schema";
+import { users, contactSubmissions, events, eventRegistrations, blogPosts, type User, type InsertUser, type Contact, type InsertContact, type Event, type InsertEvent, type EventRegistration, type InsertEventRegistration, type BlogPost, type InsertBlogPost } from "@shared/schema";
 import { db } from "./db";
-import { eq, gte, sql, asc } from "drizzle-orm";
+import { eq, gte, sql, asc, desc, isNotNull } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -16,6 +16,11 @@ export interface IStorage {
   getEventRegistrations(eventId: string): Promise<EventRegistration[]>;
   incrementEventRegisteredCount(eventId: string): Promise<boolean>;
   decrementEventRegisteredCount(eventId: string): Promise<void>;
+  createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  getBlogPosts(): Promise<BlogPost[]>;
+  getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  getPublishedBlogPosts(): Promise<BlogPost[]>;
+  getBlogPostsByCategory(category: string): Promise<BlogPost[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -105,6 +110,45 @@ export class DatabaseStorage implements IStorage {
       .update(events)
       .set({ registeredCount: sql`${events.registeredCount} - 1` })
       .where(eq(events.id, eventId));
+  }
+
+  async createBlogPost(insertPost: InsertBlogPost): Promise<BlogPost> {
+    const [post] = await db
+      .insert(blogPosts)
+      .values(insertPost)
+      .returning();
+    return post;
+  }
+
+  async getBlogPosts(): Promise<BlogPost[]> {
+    return await db
+      .select()
+      .from(blogPosts)
+      .orderBy(desc(blogPosts.createdAt));
+  }
+
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    const [post] = await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.slug, slug));
+    return post || undefined;
+  }
+
+  async getPublishedBlogPosts(): Promise<BlogPost[]> {
+    return await db
+      .select()
+      .from(blogPosts)
+      .where(isNotNull(blogPosts.publishedAt))
+      .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getBlogPostsByCategory(category: string): Promise<BlogPost[]> {
+    return await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.category, category))
+      .orderBy(desc(blogPosts.publishedAt));
   }
 }
 

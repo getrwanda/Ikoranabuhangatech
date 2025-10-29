@@ -23,6 +23,7 @@ export function Navigation() {
     { path: '/about', label: 'About' },
     { path: '/programs', label: 'Programs' },
     { path: '/events', label: 'Events' },
+    { path: '/blog', label: 'Blog' },
     { path: '/get-involved', label: 'Get Involved' },
     { path: '/resources', label: 'Resources' },
     { path: '/contact', label: 'Contact' },
