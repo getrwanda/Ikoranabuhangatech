@@ -51,9 +51,10 @@ Modern, responsive, and bilingual-ready website for Ikoranabuhanga Rigezweho®, 
 1. **Home** (`/`) - Hero, impact stats, core pillars, partners, quote section
 2. **About** (`/about`) - Mission, vision, values, NST2/SDG alignment, founder profile
 3. **Programs** (`/programs`) - Digital Literacy Clubs, ICT Mentorship, Community Engagement (with modals)
-4. **Get Involved** (`/get-involved`) - Partner, Mentor, and Volunteer opportunities with forms
-5. **Resources** (`/resources`) - Downloadable materials, news/events, newsletter signup
-6. **Contact** (`/contact`) - Contact form and information
+4. **Events** (`/events`) - Event calendar with category filtering and online registration
+5. **Get Involved** (`/get-involved`) - Partner, Mentor, and Volunteer opportunities with forms
+6. **Resources** (`/resources`) - Downloadable materials, news/events, newsletter signup
+7. **Contact** (`/contact`) - Contact form and information
 
 ### Key Components
 - **Navigation**: Sticky header with language toggle (EN/KN), responsive mobile menu
@@ -93,9 +94,6 @@ Forms send data to `/api/contact` endpoint which forwards to `info@ikoranabuhang
 - 500+ mentorship connections
 - 100% aligned with NST2 and UN SDGs
 
-## Current Development
-- Event Calendar & Registration System (In Progress)
-
 ## Future Enhancements
 - Full bilingual content implementation (English + Kinyarwanda)
 - Mentor dashboard for matching students and ICT professionals
@@ -108,3 +106,9 @@ Forms send data to `/api/contact` endpoint which forwards to `info@ikoranabuhang
 - PostgreSQL database integration for form persistence
 - Resend email service for form submission notifications
 - Production-ready contact, mentor, partner, and volunteer forms
+- Event Calendar & Registration System with:
+  - Database schema for events and event registrations
+  - Category filtering (Digital Literacy, Mentorship, Community Engagement)
+  - Online event registration with capacity tracking
+  - Email notifications (confirmation to attendees, notification to admin)
+  - 12 sample upcoming events seeded in database
