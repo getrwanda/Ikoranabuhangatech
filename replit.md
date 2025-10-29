@@ -52,9 +52,10 @@ Modern, responsive, and bilingual-ready website for Ikoranabuhanga Rigezweho®, 
 2. **About** (`/about`) - Mission, vision, values, NST2/SDG alignment, founder profile
 3. **Programs** (`/programs`) - Digital Literacy Clubs, ICT Mentorship, Community Engagement (with modals)
 4. **Events** (`/events`) - Event calendar with category filtering and online registration
-5. **Get Involved** (`/get-involved`) - Partner, Mentor, and Volunteer opportunities with forms
-6. **Resources** (`/resources`) - Downloadable materials, news/events, newsletter signup
-7. **Contact** (`/contact`) - Contact form and information
+5. **Blog** (`/blog`) - News & stories with category filtering and individual post pages
+6. **Get Involved** (`/get-involved`) - Partner, Mentor, and Volunteer opportunities with forms
+7. **Resources** (`/resources`) - Downloadable materials, news/events, newsletter signup
+8. **Contact** (`/contact`) - Contact form and information
 
 ### Key Components
 - **Navigation**: Sticky header with language toggle (EN/KN), responsive mobile menu
@@ -97,7 +98,7 @@ Forms send data to `/api/contact` endpoint which forwards to `info@ikoranabuhang
 ## Future Enhancements
 - Full bilingual content implementation (English + Kinyarwanda)
 - Mentor dashboard for matching students and ICT professionals
-- Blog content management system
+- Admin dashboard for managing blog posts, events, and content
 - Newsletter automation
 - Analytics integration
 - Payment gateway for donations
@@ -112,3 +113,9 @@ Forms send data to `/api/contact` endpoint which forwards to `info@ikoranabuhang
   - Online event registration with capacity tracking
   - Email notifications (confirmation to attendees, notification to admin)
   - 12 sample upcoming events seeded in database
+- Blog/News System with:
+  - Database schema for blog posts with slug-based URLs
+  - Category filtering (Success Stories, Digital Literacy Tips, Community News, Events Recap)
+  - Responsive blog listing page with featured images
+  - Individual blog post pages with rich content display
+  - 8 sample blog posts seeded across all categories
