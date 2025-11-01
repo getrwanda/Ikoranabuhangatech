@@ -21,6 +21,8 @@ import AdminDashboard from "@/pages/admin/Dashboard";
 import BlogManagement from "@/pages/admin/BlogManagement";
 import EventsManagement from "@/pages/admin/EventsManagement";
 import Submissions from "@/pages/admin/Submissions";
+import StudentsManagement from "@/pages/admin/StudentsManagement";
+import MentorMatching from "@/pages/admin/MentorMatching";
 
 function Router() {
   const [location] = useLocation();
@@ -42,6 +44,8 @@ function Router() {
         <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/admin/blog" component={BlogManagement} />
         <Route path="/admin/events" component={EventsManagement} />
+        <Route path="/admin/students" component={StudentsManagement} />
+        <Route path="/admin/mentor-matching" component={MentorMatching} />
         <Route path="/admin/submissions" component={Submissions} />
         <Route component={NotFound} />
       </Switch>

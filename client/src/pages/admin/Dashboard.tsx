@@ -25,6 +25,20 @@ export default function AdminDashboard() {
       bgColor: "bg-green-100",
     },
     {
+      title: "Students",
+      value: stats?.data?.students || 0,
+      icon: Users,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-100",
+    },
+    {
+      title: "Mentor Matches",
+      value: stats?.data?.mentorMatches || 0,
+      icon: Users,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+    },
+    {
       title: "Partner Applications",
       value: stats?.data?.partnerApplications || 0,
       icon: Users,

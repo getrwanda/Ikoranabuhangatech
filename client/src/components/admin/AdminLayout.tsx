@@ -26,6 +26,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
     { icon: FileText, label: "Blog Posts", path: "/admin/blog" },
     { icon: Calendar, label: "Events", path: "/admin/events" },
+    { icon: Users, label: "Students", path: "/admin/students" },
+    { icon: Users, label: "Mentor Matching", path: "/admin/mentor-matching" },
     { icon: Users, label: "Submissions", path: "/admin/submissions" },
   ];
 

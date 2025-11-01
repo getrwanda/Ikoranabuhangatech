@@ -103,6 +103,31 @@ export const blogPosts = pgTable("blog_posts", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const students = pgTable("students", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  school: text("school").notNull(),
+  grade: text("grade").notNull(),
+  learningGoals: text("learning_goals").array().notNull(),
+  interests: text("interests").array().notNull(),
+  location: text("location").notNull(),
+  parentContact: text("parent_contact"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const mentorMatches = pgTable("mentor_matches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  mentorId: varchar("mentor_id").notNull().references(() => mentorApplications.id),
+  studentId: varchar("student_id").notNull().references(() => students.id),
+  status: text("status").notNull().default('active'), // 'active', 'completed', 'paused'
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -184,6 +209,30 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   createdAt: true,
 });
 
+export const insertStudentSchema = createInsertSchema(students).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  name: z.string().min(2, "Name is required"),
+  email: z.string().email("Valid email is required"),
+  school: z.string().min(2, "School name is required"),
+  grade: z.string().min(1, "Grade is required"),
+  learningGoals: z.array(z.string()).min(1, "Please select at least one learning goal"),
+  interests: z.array(z.string()).min(1, "Please select at least one interest area"),
+  location: z.string().min(2, "Location is required"),
+});
+
+export const insertMentorMatchSchema = createInsertSchema(mentorMatches).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  mentorId: z.string().min(1, "Mentor is required"),
+  studentId: z.string().min(1, "Student is required"),
+  status: z.enum(['active', 'completed', 'paused']),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date().nullable().optional(),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertContact = z.infer<typeof insertContactSchema>;
@@ -203,3 +252,7 @@ export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSche
 export type EventRegistration = typeof eventRegistrations.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertStudent = z.infer<typeof insertStudentSchema>;
+export type Student = typeof students.$inferSelect;
+export type InsertMentorMatch = z.infer<typeof insertMentorMatchSchema>;
+export type MentorMatch = typeof mentorMatches.$inferSelect;

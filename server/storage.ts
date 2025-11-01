@@ -7,6 +7,8 @@ import {
   partnerApplications,
   mentorApplications,
   volunteerApplications,
+  students,
+  mentorMatches,
   type User, 
   type InsertUser, 
   type Contact, 
@@ -22,7 +24,11 @@ import {
   type MentorApplicationType,
   type InsertMentorApplication,
   type VolunteerApplicationType,
-  type InsertVolunteerApplication
+  type InsertVolunteerApplication,
+  type Student,
+  type InsertStudent,
+  type MentorMatch,
+  type InsertMentorMatch
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, gte, sql, asc, desc, isNotNull } from "drizzle-orm";
@@ -65,6 +71,20 @@ export interface IStorage {
   getBlogPostsCount(): Promise<number>;
   updateBlogPost(id: string, data: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
   deleteBlogPost(id: string): Promise<void>;
+  createStudent(student: InsertStudent): Promise<Student>;
+  getStudents(): Promise<Student[]>;
+  getStudent(id: string): Promise<Student | undefined>;
+  updateStudent(id: string, data: Partial<InsertStudent>): Promise<Student | undefined>;
+  deleteStudent(id: string): Promise<void>;
+  getStudentsCount(): Promise<number>;
+  createMentorMatch(match: InsertMentorMatch): Promise<MentorMatch>;
+  getMentorMatches(): Promise<MentorMatch[]>;
+  getMentorMatch(id: string): Promise<MentorMatch | undefined>;
+  getMentorMatchesByMentor(mentorId: string): Promise<MentorMatch[]>;
+  getMentorMatchesByStudent(studentId: string): Promise<MentorMatch[]>;
+  updateMentorMatch(id: string, data: Partial<InsertMentorMatch>): Promise<MentorMatch | undefined>;
+  deleteMentorMatch(id: string): Promise<void>;
+  getMentorMatchesCount(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -328,6 +348,108 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBlogPost(id: string): Promise<void> {
     await db.delete(blogPosts).where(eq(blogPosts.id, id));
+  }
+
+  async createStudent(insertStudent: InsertStudent): Promise<Student> {
+    const [student] = await db
+      .insert(students)
+      .values(insertStudent)
+      .returning();
+    return student;
+  }
+
+  async getStudents(): Promise<Student[]> {
+    return await db
+      .select()
+      .from(students)
+      .orderBy(desc(students.createdAt));
+  }
+
+  async getStudent(id: string): Promise<Student | undefined> {
+    const [student] = await db
+      .select()
+      .from(students)
+      .where(eq(students.id, id));
+    return student || undefined;
+  }
+
+  async updateStudent(id: string, data: Partial<InsertStudent>): Promise<Student | undefined> {
+    const [student] = await db
+      .update(students)
+      .set(data)
+      .where(eq(students.id, id))
+      .returning();
+    return student || undefined;
+  }
+
+  async deleteStudent(id: string): Promise<void> {
+    await db.delete(students).where(eq(students.id, id));
+  }
+
+  async getStudentsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(students);
+    return Number(result[0]?.count || 0);
+  }
+
+  async createMentorMatch(insertMatch: InsertMentorMatch): Promise<MentorMatch> {
+    const [match] = await db
+      .insert(mentorMatches)
+      .values(insertMatch)
+      .returning();
+    return match;
+  }
+
+  async getMentorMatches(): Promise<MentorMatch[]> {
+    return await db
+      .select()
+      .from(mentorMatches)
+      .orderBy(desc(mentorMatches.createdAt));
+  }
+
+  async getMentorMatch(id: string): Promise<MentorMatch | undefined> {
+    const [match] = await db
+      .select()
+      .from(mentorMatches)
+      .where(eq(mentorMatches.id, id));
+    return match || undefined;
+  }
+
+  async getMentorMatchesByMentor(mentorId: string): Promise<MentorMatch[]> {
+    return await db
+      .select()
+      .from(mentorMatches)
+      .where(eq(mentorMatches.mentorId, mentorId))
+      .orderBy(desc(mentorMatches.createdAt));
+  }
+
+  async getMentorMatchesByStudent(studentId: string): Promise<MentorMatch[]> {
+    return await db
+      .select()
+      .from(mentorMatches)
+      .where(eq(mentorMatches.studentId, studentId))
+      .orderBy(desc(mentorMatches.createdAt));
+  }
+
+  async updateMentorMatch(id: string, data: Partial<InsertMentorMatch>): Promise<MentorMatch | undefined> {
+    const [match] = await db
+      .update(mentorMatches)
+      .set(data)
+      .where(eq(mentorMatches.id, id))
+      .returning();
+    return match || undefined;
+  }
+
+  async deleteMentorMatch(id: string): Promise<void> {
+    await db.delete(mentorMatches).where(eq(mentorMatches.id, id));
+  }
+
+  async getMentorMatchesCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(mentorMatches);
+    return Number(result[0]?.count || 0);
   }
 }
 

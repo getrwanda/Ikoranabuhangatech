@@ -12,7 +12,9 @@ import {
   insertEventRegistrationSchema,
   insertEventSchema,
   insertBlogPostSchema,
-  insertUserSchema
+  insertUserSchema,
+  insertStudentSchema,
+  insertMentorMatchSchema
 } from "@shared/schema";
 import { 
   sendContactEmail, 
@@ -512,13 +514,15 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
 
   app.get("/api/admin/dashboard-stats", requireAuth, async (req, res) => {
     try {
-      const [blogCount, eventCount, partnerCount, mentorCount, volunteerCount, contactCount] = await Promise.all([
+      const [blogCount, eventCount, partnerCount, mentorCount, volunteerCount, contactCount, studentsCount, matchesCount] = await Promise.all([
         storage.getBlogPostsCount(),
         storage.getEventsCount(),
         storage.getPartnerApplicationsCount(),
         storage.getMentorApplicationsCount(),
         storage.getVolunteerApplicationsCount(),
-        storage.getContactSubmissionsCount()
+        storage.getContactSubmissionsCount(),
+        storage.getStudentsCount(),
+        storage.getMentorMatchesCount()
       ]);
 
       res.json({
@@ -529,7 +533,9 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
           partnerApplications: partnerCount,
           mentorApplications: mentorCount,
           volunteerApplications: volunteerCount,
-          contactSubmissions: contactCount
+          contactSubmissions: contactCount,
+          students: studentsCount,
+          mentorMatches: matchesCount
         }
       });
     } catch (error) {
@@ -692,6 +698,127 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     } catch (error) {
       console.error("Error fetching contact submissions:", error);
       res.status(500).json({ success: false, message: "Failed to fetch contact submissions" });
+    }
+  });
+
+  app.get("/api/admin/students", requireAuth, async (req, res) => {
+    try {
+      const students = await storage.getStudents();
+      res.json({ success: true, data: students });
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch students" });
+    }
+  });
+
+  app.get("/api/admin/students/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const student = await storage.getStudent(id);
+      if (!student) {
+        return res.status(404).json({ success: false, message: "Student not found" });
+      }
+      res.json({ success: true, data: student });
+    } catch (error) {
+      console.error("Error fetching student:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch student" });
+    }
+  });
+
+  app.post("/api/admin/students", requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertStudentSchema.parse(req.body);
+      const student = await storage.createStudent(validatedData);
+      res.json({ success: true, data: student });
+    } catch (error) {
+      console.error("Error creating student:", error);
+      res.status(400).json({ success: false, message: "Failed to create student" });
+    }
+  });
+
+  app.patch("/api/admin/students/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const student = await storage.updateStudent(id, req.body);
+      if (!student) {
+        return res.status(404).json({ success: false, message: "Student not found" });
+      }
+      res.json({ success: true, data: student });
+    } catch (error) {
+      console.error("Error updating student:", error);
+      res.status(400).json({ success: false, message: "Failed to update student" });
+    }
+  });
+
+  app.delete("/api/admin/students/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteStudent(id);
+      res.json({ success: true, message: "Student deleted" });
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      res.status(500).json({ success: false, message: "Failed to delete student" });
+    }
+  });
+
+  app.get("/api/admin/mentor-matches", requireAuth, async (req, res) => {
+    try {
+      const matches = await storage.getMentorMatches();
+      res.json({ success: true, data: matches });
+    } catch (error) {
+      console.error("Error fetching mentor matches:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch mentor matches" });
+    }
+  });
+
+  app.get("/api/admin/mentor-matches/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const match = await storage.getMentorMatch(id);
+      if (!match) {
+        return res.status(404).json({ success: false, message: "Match not found" });
+      }
+      res.json({ success: true, data: match });
+    } catch (error) {
+      console.error("Error fetching mentor match:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch mentor match" });
+    }
+  });
+
+  app.post("/api/admin/mentor-matches", requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertMentorMatchSchema.parse(req.body);
+      const match = await storage.createMentorMatch(validatedData);
+      res.json({ success: true, data: match });
+    } catch (error) {
+      console.error("Error creating mentor match:", error);
+      res.status(400).json({ success: false, message: "Failed to create mentor match" });
+    }
+  });
+
+  app.patch("/api/admin/mentor-matches/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertMentorMatchSchema.partial().parse(req.body);
+      const match = await storage.updateMentorMatch(id, validatedData);
+      if (!match) {
+        return res.status(404).json({ success: false, message: "Match not found" });
+      }
+      res.json({ success: true, data: match });
+    } catch (error) {
+      console.error("Error updating mentor match:", error);
+      res.status(400).json({ success: false, message: "Failed to update mentor match" });
+    }
+  });
+
+  app.delete("/api/admin/mentor-matches/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteMentorMatch(id);
+      res.json({ success: true, message: "Mentor match deleted" });
+    } catch (error) {
+      console.error("Error deleting mentor match:", error);
+      res.status(500).json({ success: false, message: "Failed to delete mentor match" });
     }
   });
 
