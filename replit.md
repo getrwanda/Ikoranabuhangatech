@@ -95,13 +95,40 @@ Forms send data to `/api/contact` endpoint which forwards to `info@ikoranabuhang
 - 500+ mentorship connections
 - 100% aligned with NST2 and UN SDGs
 
+## Admin Dashboard
+The website includes a comprehensive admin panel for content and program management:
+
+### Admin Pages
+1. **Dashboard** (`/admin/dashboard`) - Overview with statistics for all entities
+2. **Events Management** (`/admin/events`) - Create, edit, and manage events
+3. **Blog Management** (`/admin/blog`) - Manage blog posts and news articles
+4. **Students Management** (`/admin/students`) - Track students in programs
+5. **Mentor Matching** (`/admin/mentor-matching`) - Match students with ICT professional mentors
+
+### Mentor Matching System
+Complete system for connecting students with ICT professionals:
+- **Students Database**: Track students with grade level, interests, location, and contact info
+- **Mentor Matching**: Create and manage mentor-student matches with:
+  - Status tracking (active, completed, paused)
+  - Start and end dates
+  - Notes and progress tracking
+  - Automatic dropdown of available mentors from mentor applications
+  - Searchable student list by name or email
+- **Dashboard Metrics**: Real-time counts of students and active mentor matches
+- **Authentication**: All admin routes protected with requireAuth middleware
+
+### Database Schema
+- `students`: Student profiles with grade, interests (array), location, contact info
+- `mentorMatches`: Matches between students and mentors with status, dates, notes
+- Uses PostgreSQL with Drizzle ORM
+- All date fields use `z.coerce.date()` for seamless JSON/API compatibility
+
 ## Future Enhancements
 - Full bilingual content implementation (English + Kinyarwanda)
-- Mentor dashboard for matching students and ICT professionals
-- Admin dashboard for managing blog posts, events, and content
 - Newsletter automation
 - Analytics integration
 - Payment gateway for donations
+- Public-facing mentor dashboard for mentors to update match progress
 
 ## Recent Completion
 - PostgreSQL database integration for form persistence
@@ -119,3 +146,9 @@ Forms send data to `/api/contact` endpoint which forwards to `info@ikoranabuhang
   - Responsive blog listing page with featured images
   - Individual blog post pages with rich content display
   - 8 sample blog posts seeded across all categories
+- **Mentor Matching Dashboard** (Latest):
+  - Complete student management system with CRUD operations
+  - Mentor-student matching interface with status tracking
+  - Integration with existing mentor applications database
+  - Dashboard statistics for students and matches
+  - Secure admin-only access with authentication
