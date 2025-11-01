@@ -11,7 +11,13 @@ import {
   insertVolunteerApplicationSchema,
   insertEventRegistrationSchema
 } from "@shared/schema";
-import { sendContactEmail, sendEventRegistrationEmail } from "./email";
+import { 
+  sendContactEmail, 
+  sendEventRegistrationEmail,
+  sendPartnerApplicationEmail,
+  sendMentorApplicationEmail,
+  sendVolunteerApplicationEmail
+} from "./email";
 import OpenAI from "openai";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -55,6 +61,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const application = await storage.createMentorApplication(validatedData);
       
+      await sendMentorApplicationEmail(validatedData);
+      
       res.json({ 
         success: true, 
         message: "Mentor application submitted successfully",
@@ -84,6 +92,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const application = await storage.createPartnerApplication(validatedData);
       
+      await sendPartnerApplicationEmail(validatedData);
+      
       res.json({ 
         success: true, 
         message: "Partnership inquiry submitted successfully",
@@ -112,6 +122,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertVolunteerApplicationSchema.parse(req.body);
       
       const application = await storage.createVolunteerApplication(validatedData);
+      
+      await sendVolunteerApplicationEmail(validatedData);
       
       res.json({ 
         success: true, 
