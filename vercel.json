@@ -2,18 +2,8 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
-  "builds": [
-    { "src": "dist/index.js", "use": "@vercel/node" },
-    { "src": "dist/public/**/*", "use": "@vercel/static" }
-  ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "dist/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "dist/public/$1"
-    }
+    { "src": "/api/(.*)", "dest": "dist/index.js" },
+    { "src": "/(.*)", "dest": "dist/public/$1" }
   ]
 }
