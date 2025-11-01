@@ -60,7 +60,7 @@ export default function BlogManagement() {
     mutationFn: async (data: InsertBlogPost) => {
       const payload = {
         ...data,
-        publishedAt: data.status === "published" ? new Date().toISOString() : null,
+        publishedAt: data.status === "published" ? new Date() : null,
       };
       return apiRequest("POST", "/api/admin/blog", payload);
     },
@@ -86,7 +86,7 @@ export default function BlogManagement() {
     mutationFn: async ({ id, data }: { id: string; data: Partial<InsertBlogPost> }) => {
       const payload = {
         ...data,
-        publishedAt: data.status === "published" ? new Date().toISOString() : null,
+        publishedAt: data.status === "published" ? new Date() : null,
       };
       return apiRequest("PATCH", `/api/admin/blog/${id}`, payload);
     },

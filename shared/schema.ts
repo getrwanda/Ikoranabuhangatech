@@ -197,6 +197,8 @@ export const insertEventSchema = createInsertSchema(events).omit({
   id: true,
   createdAt: true,
   registeredCount: true,
+}).extend({
+  date: z.coerce.date(),
 });
 
 export const insertEventRegistrationSchema = createInsertSchema(eventRegistrations).omit({
@@ -207,6 +209,8 @@ export const insertEventRegistrationSchema = createInsertSchema(eventRegistratio
 export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   id: true,
   createdAt: true,
+}).extend({
+  publishedAt: z.coerce.date().nullable().optional(),
 });
 
 export const insertStudentSchema = createInsertSchema(students).omit({
