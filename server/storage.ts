@@ -33,25 +33,38 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   createContactSubmission(contact: InsertContact): Promise<Contact>;
   getContactSubmissions(): Promise<Contact[]>;
+  getContactSubmissionsCount(): Promise<number>;
   createPartnerApplication(application: InsertPartnerApplication): Promise<PartnerApplication>;
   getPartnerApplications(): Promise<PartnerApplication[]>;
+  getPartnerApplicationsCount(): Promise<number>;
   createMentorApplication(application: InsertMentorApplication): Promise<MentorApplicationType>;
   getMentorApplications(): Promise<MentorApplicationType[]>;
+  getMentorApplicationsCount(): Promise<number>;
   createVolunteerApplication(application: InsertVolunteerApplication): Promise<VolunteerApplicationType>;
   getVolunteerApplications(): Promise<VolunteerApplicationType[]>;
+  getVolunteerApplicationsCount(): Promise<number>;
   createEvent(event: InsertEvent): Promise<Event>;
   getEvents(): Promise<Event[]>;
+  getAllEvents(): Promise<Event[]>;
   getEvent(id: string): Promise<Event | undefined>;
   getUpcomingEvents(): Promise<Event[]>;
+  getEventsCount(): Promise<number>;
+  updateEvent(id: string, data: Partial<InsertEvent>): Promise<Event | undefined>;
+  deleteEvent(id: string): Promise<void>;
   createEventRegistration(registration: InsertEventRegistration): Promise<EventRegistration>;
   getEventRegistrations(eventId: string): Promise<EventRegistration[]>;
   incrementEventRegisteredCount(eventId: string): Promise<boolean>;
   decrementEventRegisteredCount(eventId: string): Promise<void>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
   getBlogPosts(): Promise<BlogPost[]>;
+  getAllBlogPosts(): Promise<BlogPost[]>;
+  getBlogPostById(id: string): Promise<BlogPost | undefined>;
   getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
   getPublishedBlogPosts(): Promise<BlogPost[]>;
   getBlogPostsByCategory(category: string): Promise<BlogPost[]>;
+  getBlogPostsCount(): Promise<number>;
+  updateBlogPost(id: string, data: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
+  deleteBlogPost(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -225,6 +238,96 @@ export class DatabaseStorage implements IStorage {
       .from(blogPosts)
       .where(eq(blogPosts.category, category))
       .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getContactSubmissionsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(contactSubmissions);
+    return Number(result[0]?.count || 0);
+  }
+
+  async getPartnerApplicationsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(partnerApplications);
+    return Number(result[0]?.count || 0);
+  }
+
+  async getMentorApplicationsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(mentorApplications);
+    return Number(result[0]?.count || 0);
+  }
+
+  async getVolunteerApplicationsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(volunteerApplications);
+    return Number(result[0]?.count || 0);
+  }
+
+  async getAllEvents(): Promise<Event[]> {
+    return await db
+      .select()
+      .from(events)
+      .orderBy(desc(events.date));
+  }
+
+  async getEventsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(events);
+    return Number(result[0]?.count || 0);
+  }
+
+  async updateEvent(id: string, data: Partial<InsertEvent>): Promise<Event | undefined> {
+    const [event] = await db
+      .update(events)
+      .set(data)
+      .where(eq(events.id, id))
+      .returning();
+    return event || undefined;
+  }
+
+  async deleteEvent(id: string): Promise<void> {
+    await db.delete(events).where(eq(events.id, id));
+  }
+
+  async getAllBlogPosts(): Promise<BlogPost[]> {
+    return await db
+      .select()
+      .from(blogPosts)
+      .orderBy(desc(blogPosts.createdAt));
+  }
+
+  async getBlogPostById(id: string): Promise<BlogPost | undefined> {
+    const [post] = await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.id, id));
+    return post || undefined;
+  }
+
+  async getBlogPostsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(blogPosts);
+    return Number(result[0]?.count || 0);
+  }
+
+  async updateBlogPost(id: string, data: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const [post] = await db
+      .update(blogPosts)
+      .set(data)
+      .where(eq(blogPosts.id, id))
+      .returning();
+    return post || undefined;
+  }
+
+  async deleteBlogPost(id: string): Promise<void> {
+    await db.delete(blogPosts).where(eq(blogPosts.id, id));
   }
 }
 

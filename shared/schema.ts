@@ -98,6 +98,7 @@ export const blogPosts = pgTable("blog_posts", {
   category: text("category").notNull(), // 'success-stories', 'digital-literacy-tips', 'community-news', 'events-recap'
   author: text("author").notNull(),
   featuredImage: text("featured_image"),
+  status: text("status").notNull().default('draft'), // 'draft' or 'published'
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
