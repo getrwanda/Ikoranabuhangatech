@@ -1,4 +1,29 @@
-import { users, contactSubmissions, events, eventRegistrations, blogPosts, type User, type InsertUser, type Contact, type InsertContact, type Event, type InsertEvent, type EventRegistration, type InsertEventRegistration, type BlogPost, type InsertBlogPost } from "@shared/schema";
+import { 
+  users, 
+  contactSubmissions, 
+  events, 
+  eventRegistrations, 
+  blogPosts,
+  partnerApplications,
+  mentorApplications,
+  volunteerApplications,
+  type User, 
+  type InsertUser, 
+  type Contact, 
+  type InsertContact, 
+  type Event, 
+  type InsertEvent, 
+  type EventRegistration, 
+  type InsertEventRegistration, 
+  type BlogPost, 
+  type InsertBlogPost,
+  type PartnerApplication,
+  type InsertPartnerApplication,
+  type MentorApplicationType,
+  type InsertMentorApplication,
+  type VolunteerApplicationType,
+  type InsertVolunteerApplication
+} from "@shared/schema";
 import { db } from "./db";
 import { eq, gte, sql, asc, desc, isNotNull } from "drizzle-orm";
 
@@ -8,6 +33,12 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   createContactSubmission(contact: InsertContact): Promise<Contact>;
   getContactSubmissions(): Promise<Contact[]>;
+  createPartnerApplication(application: InsertPartnerApplication): Promise<PartnerApplication>;
+  getPartnerApplications(): Promise<PartnerApplication[]>;
+  createMentorApplication(application: InsertMentorApplication): Promise<MentorApplicationType>;
+  getMentorApplications(): Promise<MentorApplicationType[]>;
+  createVolunteerApplication(application: InsertVolunteerApplication): Promise<VolunteerApplicationType>;
+  getVolunteerApplications(): Promise<VolunteerApplicationType[]>;
   createEvent(event: InsertEvent): Promise<Event>;
   getEvents(): Promise<Event[]>;
   getEvent(id: string): Promise<Event | undefined>;
@@ -52,6 +83,51 @@ export class DatabaseStorage implements IStorage {
 
   async getContactSubmissions(): Promise<Contact[]> {
     return await db.select().from(contactSubmissions);
+  }
+
+  async createPartnerApplication(insertApplication: InsertPartnerApplication): Promise<PartnerApplication> {
+    const [application] = await db
+      .insert(partnerApplications)
+      .values(insertApplication)
+      .returning();
+    return application;
+  }
+
+  async getPartnerApplications(): Promise<PartnerApplication[]> {
+    return await db
+      .select()
+      .from(partnerApplications)
+      .orderBy(desc(partnerApplications.createdAt));
+  }
+
+  async createMentorApplication(insertApplication: InsertMentorApplication): Promise<MentorApplicationType> {
+    const [application] = await db
+      .insert(mentorApplications)
+      .values(insertApplication)
+      .returning();
+    return application;
+  }
+
+  async getMentorApplications(): Promise<MentorApplicationType[]> {
+    return await db
+      .select()
+      .from(mentorApplications)
+      .orderBy(desc(mentorApplications.createdAt));
+  }
+
+  async createVolunteerApplication(insertApplication: InsertVolunteerApplication): Promise<VolunteerApplicationType> {
+    const [application] = await db
+      .insert(volunteerApplications)
+      .values(insertApplication)
+      .returning();
+    return application;
+  }
+
+  async getVolunteerApplications(): Promise<VolunteerApplicationType[]> {
+    return await db
+      .select()
+      .from(volunteerApplications)
+      .orderBy(desc(volunteerApplications.createdAt));
   }
 
   async createEvent(insertEvent: InsertEvent): Promise<Event> {

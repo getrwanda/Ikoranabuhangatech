@@ -6,6 +6,9 @@ import {
   mentorApplicationSchema,
   partnerInquirySchema,
   volunteerApplicationSchema,
+  insertPartnerApplicationSchema,
+  insertMentorApplicationSchema,
+  insertVolunteerApplicationSchema,
   insertEventRegistrationSchema
 } from "@shared/schema";
 import { sendContactEmail, sendEventRegistrationEmail } from "./email";
@@ -48,14 +51,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/mentor-application", async (req, res) => {
     try {
-      const validatedData = mentorApplicationSchema.parse({
-        ...req.body,
-        type: "mentor"
-      });
+      const validatedData = insertMentorApplicationSchema.parse(req.body);
       
-      const application = await storage.createContactSubmission(validatedData);
-      
-      await sendContactEmail(validatedData);
+      const application = await storage.createMentorApplication(validatedData);
       
       res.json({ 
         success: true, 
@@ -82,19 +80,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/partner-inquiry", async (req, res) => {
     try {
-      const validatedData = partnerInquirySchema.parse({
-        ...req.body,
-        type: "partner"
-      });
+      const validatedData = insertPartnerApplicationSchema.parse(req.body);
       
-      const inquiry = await storage.createContactSubmission(validatedData);
-      
-      await sendContactEmail(validatedData);
+      const application = await storage.createPartnerApplication(validatedData);
       
       res.json({ 
         success: true, 
         message: "Partnership inquiry submitted successfully",
-        id: inquiry.id 
+        id: application.id 
       });
     } catch (error) {
       console.error("Partner inquiry error:", error);
@@ -116,14 +109,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/volunteer-application", async (req, res) => {
     try {
-      const validatedData = volunteerApplicationSchema.parse({
-        ...req.body,
-        type: "volunteer"
-      });
+      const validatedData = insertVolunteerApplicationSchema.parse(req.body);
       
-      const application = await storage.createContactSubmission(validatedData);
-      
-      await sendContactEmail(validatedData);
+      const application = await storage.createVolunteerApplication(validatedData);
       
       res.json({ 
         success: true, 
