@@ -9,6 +9,7 @@ import {
   Users,
   LogOut,
   Menu,
+  Settings,
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +30,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { icon: Users, label: "Students", path: "/admin/students" },
     { icon: Users, label: "Mentor Matching", path: "/admin/mentor-matching" },
     { icon: Users, label: "Submissions", path: "/admin/submissions" },
+    { icon: Settings, label: "Settings", path: "/admin/settings" },
   ];
 
   const handleLogout = async () => {

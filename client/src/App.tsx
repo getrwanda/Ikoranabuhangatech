@@ -23,6 +23,7 @@ import EventsManagement from "@/pages/admin/EventsManagement";
 import Submissions from "@/pages/admin/Submissions";
 import StudentsManagement from "@/pages/admin/StudentsManagement";
 import MentorMatching from "@/pages/admin/MentorMatching";
+import AdminSettings from "@/pages/admin/Settings";
 
 function Router() {
   const [location] = useLocation();
@@ -47,6 +48,7 @@ function Router() {
         <Route path="/admin/students" component={StudentsManagement} />
         <Route path="/admin/mentor-matching" component={MentorMatching} />
         <Route path="/admin/submissions" component={Submissions} />
+        <Route path="/admin/settings" component={AdminSettings} />
         <Route component={NotFound} />
       </Switch>
     </div>
