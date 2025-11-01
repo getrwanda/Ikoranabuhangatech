@@ -104,6 +104,7 @@ The website includes a comprehensive admin panel for content and program managem
 3. **Blog Management** (`/admin/blog`) - Manage blog posts and news articles
 4. **Students Management** (`/admin/students`) - Track students in programs
 5. **Mentor Matching** (`/admin/mentor-matching`) - Match students with ICT professional mentors
+6. **Settings** (`/admin/settings`) - Account management and password change
 
 ### Mentor Matching System
 Complete system for connecting students with ICT professionals:
@@ -118,10 +119,17 @@ Complete system for connecting students with ICT professionals:
 - **Authentication**: All admin routes protected with requireAuth middleware
 
 ### Database Schema
+- `users`: Admin user accounts with bcrypt-hashed passwords
 - `students`: Student profiles with grade, interests (array), location, contact info
 - `mentorMatches`: Matches between students and mentors with status, dates, notes
 - Uses PostgreSQL with Drizzle ORM
 - All date fields use `z.coerce.date()` for seamless JSON/API compatibility
+
+### Admin Authentication
+- **Default Admin User**: username `sudox`
+- Password change available in Settings page
+- Session-based authentication using Passport.js with PostgreSQL session store
+- All admin routes protected with requireAuth middleware
 
 ## Future Enhancements
 - Full bilingual content implementation (English + Kinyarwanda)
@@ -146,9 +154,16 @@ Complete system for connecting students with ICT professionals:
   - Responsive blog listing page with featured images
   - Individual blog post pages with rich content display
   - 8 sample blog posts seeded across all categories
-- **Mentor Matching Dashboard** (Latest):
+- **Mentor Matching Dashboard**:
   - Complete student management system with CRUD operations
   - Mentor-student matching interface with status tracking
   - Integration with existing mentor applications database
   - Dashboard statistics for students and matches
   - Secure admin-only access with authentication
+- **Admin Account Management** (Latest):
+  - Secure password change functionality in Settings page
+  - Current password verification before allowing changes
+  - Client-side and server-side password validation (minimum 8 characters)
+  - Password confirmation matching
+  - User-friendly error messages and success notifications
+  - Bcrypt password hashing for security
