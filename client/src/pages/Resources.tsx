@@ -205,7 +205,7 @@ export default function Resources() {
                     src="https://www.youtube.com/embed/videoseries?list=UUFsQPyykV-_Yqe7yfocaisA"
                     title="Ikoranabuhanga Rigezweho YouTube Channel"
                     frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   ></iframe>
                 </div>
