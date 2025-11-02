@@ -73,6 +73,11 @@ app.use((req, res, next) => {
       res.sendFile(path.join(publicPath, "index.html"));
     });
   }
+
+  const PORT = Number(process.env.PORT) || 5000;
+  server.listen(PORT, "0.0.0.0", () => {
+    log(`serving on port ${PORT}`);
+  });
 })();
 
 // ✅ Export Express app for Vercel Serverless Function

@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Facebook, Linkedin, Youtube, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Youtube, Mail, Phone, MapPin } from "lucide-react";
 import { ImigongoPattern } from "./ImigongoPattern";
 import logoUrl from "@assets/logo_1761563218042.png";
 
@@ -59,19 +59,13 @@ export function Footer() {
               </li>
             </ul>
             <div className="flex items-center gap-3 mt-4">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" data-testid="social-link-facebook">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" data-testid="social-link-linkedin">
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" data-testid="social-link-youtube">
+              <a href="https://www.youtube.com/channel/UCFsQPyykV-_Yqe7yfocaisA" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" data-testid="social-link-youtube">
                 <Youtube className="h-5 w-5" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" data-testid="social-link-twitter">
-                <Twitter className="h-5 w-5" />
-              </a>
             </div>
+            <p className="text-xs text-muted-foreground mt-2 italic">
+              Connect with us on social media
+            </p>
           </div>
         </div>
 
