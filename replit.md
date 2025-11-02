@@ -160,10 +160,18 @@ Complete system for connecting students with ICT professionals:
   - Integration with existing mentor applications database
   - Dashboard statistics for students and matches
   - Secure admin-only access with authentication
-- **Admin Account Management** (Latest):
+- **Admin Account Management**:
   - Secure password change functionality in Settings page
   - Current password verification before allowing changes
   - Client-side and server-side password validation (minimum 8 characters)
   - Password confirmation matching
   - User-friendly error messages and success notifications
   - Bcrypt password hashing for security
+- **Vercel Deployment Architecture** (Latest):
+  - Refactored backend to work as proper Vercel serverless function
+  - Created `api/index.ts` as Vercel function handler with memoized app initialization
+  - Separated `setupApp()` and `startServer()` in `server/index.ts` for dual-mode operation
+  - Supports both local development (with Vite HMR) and Vercel serverless deployment
+  - Error-resilient initialization with automatic retry on failure
+  - Configured `vercel.json` for proper API routing (`/api/*` → serverless function)
+  - Frontend routes (`/*`) served from static build output (`dist/public`)
