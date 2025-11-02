@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
   const start = Date.now();
-  const path = req.path;
+  const pathUrl = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
   const originalResJson = res.json;
@@ -35,8 +35,8 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+    if (pathUrl.startsWith("/api")) {
+      let logLine = `${req.method} ${pathUrl} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -52,7 +52,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Register routes and middleware
+// ✅ Register routes and setup
 (async () => {
   const server = await registerRoutes(app);
 
@@ -62,23 +62,27 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
   });
 
-  if (app.get("env") === "development") {
+  if (process.env.VERCEL) {
+    // ✅ Running on Vercel (Serverless)
+    serveStatic(app);
+  } else if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
 
-    // ✅ Serve index.html for React Router fallback
+    // ✅ React Router fallback
     const publicPath = path.resolve(process.cwd(), "dist/public");
     app.get("*", (_req, res) => {
       res.sendFile(path.join(publicPath, "index.html"));
     });
-  }
 
-  const PORT = Number(process.env.PORT) || 5000;
-  server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT}`);
-  });
+    // ✅ Local run only
+    const PORT = Number(process.env.PORT) || 5000;
+    server.listen(PORT, "0.0.0.0", () => {
+      log(`serving locally on port ${PORT}`);
+    });
+  }
 })();
 
-// ✅ Export Express app for Vercel Serverless Function
+// ✅ Export Express app for Vercel
 export default app;
