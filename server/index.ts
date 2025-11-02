@@ -3,15 +3,16 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupAuth } from "./auth";
 import path from "path";
-
-const app = express();
-setupAuth(app);
+import type { Server } from "http";
 
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
   }
 }
+
+const app = express();
+setupAuth(app);
 
 app.use(
   express.json({
@@ -52,8 +53,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Register routes and setup
-(async () => {
+export async function setupApp() {
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -62,12 +62,14 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
   });
 
+  return { app, server };
+}
+
+export async function startServer() {
+  const { app, server } = await setupApp();
   const PORT = Number(process.env.PORT) || 5000;
 
-  if (process.env.VERCEL) {
-    // ✅ Running on Vercel (Serverless)
-    serveStatic(app);
-  } else if (app.get("env") === "development") {
+  if (app.get("env") === "development") {
     await setupVite(app, server);
     server.listen(PORT, "0.0.0.0", () => {
       log(`serving on http://0.0.0.0:${PORT}`);
@@ -75,18 +77,21 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
 
-    // ✅ React Router fallback
     const publicPath = path.resolve(process.cwd(), "dist/public");
     app.get("*", (_req, res) => {
       res.sendFile(path.join(publicPath, "index.html"));
     });
 
-    // ✅ Local run only
     server.listen(PORT, "0.0.0.0", () => {
       log(`serving locally on port ${PORT}`);
     });
   }
-})();
 
-// ✅ Export Express app for Vercel
+  return server;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  startServer();
+}
+
 export default app;
