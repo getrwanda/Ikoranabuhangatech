@@ -62,11 +62,16 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
   });
 
+  const PORT = Number(process.env.PORT) || 5000;
+
   if (process.env.VERCEL) {
     // ✅ Running on Vercel (Serverless)
     serveStatic(app);
   } else if (app.get("env") === "development") {
     await setupVite(app, server);
+    server.listen(PORT, "0.0.0.0", () => {
+      log(`serving on http://0.0.0.0:${PORT}`);
+    });
   } else {
     serveStatic(app);
 
@@ -77,7 +82,6 @@ app.use((req, res, next) => {
     });
 
     // ✅ Local run only
-    const PORT = Number(process.env.PORT) || 5000;
     server.listen(PORT, "0.0.0.0", () => {
       log(`serving locally on port ${PORT}`);
     });
