@@ -28,6 +28,10 @@ import passport from "passport";
 import { requireAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.get("/favicon.ico", (_req, res) => {
+    res.redirect(301, "/favicon.png");
+  });
+
   app.post("/api/auth/login", passport.authenticate("local"), (req, res) => {
     res.json({ success: true, user: req.user });
   });
