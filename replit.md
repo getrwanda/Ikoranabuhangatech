@@ -8,7 +8,7 @@ Modern, responsive, and bilingual-ready website for Ikoranabuhanga Rigezweho®, 
 - **Tagline**: Building Rwanda's Future through Digital Literacy and Mentorship
 - **Mission**: Nurture a young tech-savvy community equipped with digital skills, mentorship, and ethical ICT awareness
 - **Contact**: 
-  - Founder: Joe Sure Gasore
+  - Founder: JOSHUA Gasore
   - Phone: +250 788 331 033
   - Email: info@ikoranabuhanga.tech
   - Location: NR24, Rwanda

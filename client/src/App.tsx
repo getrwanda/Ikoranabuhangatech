@@ -3,6 +3,8 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { HelmetProvider } from "react-helmet-async";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ChatWidget } from "@/components/ChatWidget";
@@ -28,7 +30,7 @@ import AdminSettings from "@/pages/admin/Settings";
 function Router() {
   const [location] = useLocation();
   const isAdminRoute = location.startsWith("/admin");
-  
+
   return (
     <div key={location} className={isAdminRoute ? "" : "page-transition-enter"}>
       <Switch>
@@ -60,19 +62,23 @@ function App() {
   const isAdminRoute = location.startsWith("/admin");
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="flex flex-col min-h-screen">
-          {!isAdminRoute && <Navigation />}
-          <main className="flex-1">
-            <Router />
-          </main>
-          {!isAdminRoute && <Footer />}
-        </div>
-        {!isAdminRoute && <ChatWidget />}
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <div className="flex flex-col min-h-screen">
+              {!isAdminRoute && <Navigation />}
+              <main className="flex-1">
+                <Router />
+              </main>
+              {!isAdminRoute && <Footer />}
+            </div>
+            {!isAdminRoute && <ChatWidget />}
+            <Toaster />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </HelmetProvider>
   );
 }
 

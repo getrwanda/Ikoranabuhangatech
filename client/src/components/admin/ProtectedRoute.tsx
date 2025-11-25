@@ -2,15 +2,22 @@ import { ReactNode, useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 
+import { User } from "@shared/schema";
+
 interface ProtectedRouteProps {
   children: ReactNode;
+}
+
+interface AuthResponse {
+  success: boolean;
+  user: User | null;
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [, setLocation] = useLocation();
   const [isChecking, setIsChecking] = useState(true);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<AuthResponse>({
     queryKey: ["/api/auth/me"],
   });
 

@@ -181,7 +181,7 @@ This website combines the professionalism of educational platforms (like edX, Co
 **Hero Images Required**:
 1. **Home Hero**: Wide-angle shot of Rwandan youth engaged with computers/tablets in classroom setting, vibrant and energetic
 2. **Programs Page**: Students collaborating on tech project, hands visible on keyboards
-3. **About Page**: Portrait of founder Joe Sure Gasore or team photo in professional setting
+3. **About Page**: Portrait of founder JOSHUA Gasore or team photo in professional setting
 
 **Supporting Images**:
 4. Digital Literacy Club activities (students in groups)

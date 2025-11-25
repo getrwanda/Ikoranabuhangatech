@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -90,8 +91,15 @@ export async function startServer() {
   return server;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  startServer();
+// Check if this module is being run directly (works on both Windows and Unix)
+const normalizedMetaUrl = import.meta.url.replace(/\\/g, '/');
+const normalizedArgv = `file:///${process.argv[1].replace(/\\/g, '/')}`;
+
+if (normalizedMetaUrl === normalizedArgv || import.meta.url.endsWith('server/index.ts')) {
+  startServer().catch(err => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  });
 }
 
 export default app;

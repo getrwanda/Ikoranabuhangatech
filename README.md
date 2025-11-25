@@ -355,7 +355,7 @@ The website features Joesure, an AI-powered assistant that helps visitors:
 ## 📧 Contact Information
 
 **Ikoranabuhanga Rigezweho®**
-- **Founder**: Joe Sure Gasore
+- **Founder**: JOSHUA Gasore
 - **Phone**: +250 788 331 033
 - **Email**: info@ikoranabuhanga.tech
 - **Website**: www.ikoranabuhanga.tech

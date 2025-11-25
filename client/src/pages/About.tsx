@@ -191,7 +191,7 @@ export default function About() {
                     <span className="text-white font-heading font-bold text-3xl">JG</span>
                   </div>
                   <h3 className="font-heading font-bold text-2xl text-foreground mb-2">
-                    Joe Sure Gasore
+                    JOSHUA Gasore
                   </h3>
                   <p className="text-accent font-medium">Founder & Project Lead</p>
                 </div>

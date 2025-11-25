@@ -506,7 +506,7 @@ HOW TO GET INVOLVED:
    - In-kind donations (equipment, software licenses) are welcome
 
 CONTACT INFORMATION:
-- Founder & Project Lead: Joe Sure Gasore
+- Founder & Project Lead: JOSHUA Gasore
 - Phone: +250 788 331 033
 - Email: info@ikoranabuhanga.tech
 - Website: www.ikoranabuhanga.tech

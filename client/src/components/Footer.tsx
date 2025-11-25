@@ -9,7 +9,7 @@ export function Footer() {
   return (
     <footer className="relative bg-secondary border-t">
       <ImigongoPattern opacity={0.05} />
-      
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
@@ -59,7 +59,7 @@ export function Footer() {
               </li>
             </ul>
             <div className="flex items-center gap-3 mt-4">
-              <a href="https://www.youtube.com/channel/UCFsQPyykV-_Yqe7yfocaisA" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" data-testid="social-link-youtube">
+              <a href="https://www.youtube.com/channel/UCFsQPyykV-_Yqe7yfocaisA" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" data-testid="social-link-youtube" aria-label="Visit our YouTube channel">
                 <Youtube className="h-5 w-5" />
               </a>
             </div>

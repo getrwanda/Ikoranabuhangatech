@@ -4,8 +4,22 @@ import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Calendar, Users, Mail } from "lucide-react";
 
+interface DashboardStatsResponse {
+  success: boolean;
+  data: {
+    blogPosts: number;
+    events: number;
+    partnerApplications: number;
+    mentorApplications: number;
+    volunteerApplications: number;
+    contactSubmissions: number;
+    students: number;
+    mentorMatches: number;
+  };
+}
+
 export default function AdminDashboard() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery<DashboardStatsResponse>({
     queryKey: ["/api/admin/dashboard-stats"],
   });
 
@@ -173,9 +187,9 @@ export default function AdminDashboard() {
                 <div className="flex justify-between py-2">
                   <span className="text-muted-foreground">Total Applications</span>
                   <span className="font-medium">
-                    {(stats?.data?.partnerApplications || 0) + 
-                     (stats?.data?.mentorApplications || 0) + 
-                     (stats?.data?.volunteerApplications || 0)}
+                    {(stats?.data?.partnerApplications || 0) +
+                      (stats?.data?.mentorApplications || 0) +
+                      (stats?.data?.volunteerApplications || 0)}
                   </span>
                 </div>
                 <div className="flex justify-between py-2">

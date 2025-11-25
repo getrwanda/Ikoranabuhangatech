@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ImigongoPattern, ImigongoAccent } from "@/components/ImigongoPattern";
 import { Testimonials } from "@/components/Testimonials";
 import { BookOpen, Users, Megaphone, ArrowRight, TrendingUp, School, Award } from "lucide-react";
+import { HeadMeta } from "@/components/HeadMeta";
 
 function AnimatedCounter({ value, suffix = "", duration = 2000 }: { value: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -59,7 +60,7 @@ function AnimatedCounter({ value, suffix = "", duration = 2000 }: { value: numbe
 
 export default function Home() {
   const [currentPartner, setCurrentPartner] = useState(0);
-  
+
   const stats = [
     { number: 1500, suffix: "+", label: "Youth Empowered", icon: Users },
     { number: 15, suffix: "+", label: "Partner Schools", icon: School },
@@ -98,24 +99,25 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <HeadMeta />
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-accent">
         <ImigongoPattern opacity={0.15} />
-        
+
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 
+            <h1
               className="font-heading font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white mb-6 leading-tight fade-in"
               style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}
             >
               Building Rwanda's Future through Digital Literacy and Mentorship
             </h1>
-            <p 
+            <p
               className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 leading-relaxed max-w-3xl mx-auto fade-in"
               style={{ animationDelay: '0.4s', animationFillMode: 'backwards' }}
             >
               We aim to nurture a young tech-savvy community by empowering Rwandan youth with digital skills, mentorship, and ethical ICT values.
             </p>
-            <div 
+            <div
               className="flex flex-col sm:flex-row gap-4 justify-center items-center fade-in"
               style={{ animationDelay: '0.6s', animationFillMode: 'backwards' }}
             >
@@ -126,9 +128,9 @@ export default function Home() {
                 </Button>
               </Link>
               <Link href="/get-involved">
-                <Button 
-                  size="lg" 
-                  className="text-lg px-8 py-6 min-h-14 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white hover:bg-white/20 btn-hover-lift" 
+                <Button
+                  size="lg"
+                  className="text-lg px-8 py-6 min-h-14 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white hover:bg-white/20 btn-hover-lift"
                   data-testid="button-partner"
                 >
                   Partner With Us
@@ -241,7 +243,7 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <div className="text-center mt-8">
               <Link href="/resources">
                 <Button size="lg" variant="outline" className="gap-2" data-testid="button-view-more-videos">
