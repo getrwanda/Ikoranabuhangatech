@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { 
-  insertContactSchema, 
+import {
+  insertContactSchema,
   mentorApplicationSchema,
   partnerInquirySchema,
   volunteerApplicationSchema,
@@ -16,8 +16,8 @@ import {
   insertStudentSchema,
   insertMentorMatchSchema
 } from "@shared/schema";
-import { 
-  sendContactEmail, 
+import {
+  sendContactEmail,
   sendEventRegistrationEmail,
   sendPartnerApplicationEmail,
   sendMentorApplicationEmail,
@@ -28,9 +28,7 @@ import passport from "passport";
 import { requireAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  app.get("/favicon.ico", (_req, res) => {
-    res.redirect(301, "/favicon.png");
-  });
+
 
   app.post("/api/auth/login", passport.authenticate("local"), (req, res) => {
     res.json({ success: true, user: req.user });
@@ -56,49 +54,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = req.user as any;
 
       if (!currentPassword || !newPassword) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Current password and new password are required" 
+        return res.status(400).json({
+          success: false,
+          message: "Current password and new password are required"
         });
       }
 
       if (newPassword.length < 8) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "New password must be at least 8 characters long" 
+        return res.status(400).json({
+          success: false,
+          message: "New password must be at least 8 characters long"
         });
       }
 
       const dbUser = await storage.getUserByUsername(user.username);
       if (!dbUser) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "User not found" 
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
         });
       }
 
       const bcrypt = await import("bcrypt");
       const isValid = await bcrypt.compare(currentPassword, dbUser.password);
-      
+
       if (!isValid) {
-        return res.status(401).json({ 
-          success: false, 
-          message: "Current password is incorrect" 
+        return res.status(401).json({
+          success: false,
+          message: "Current password is incorrect"
         });
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       await storage.updateUserPassword(user.id, hashedPassword);
 
-      res.json({ 
-        success: true, 
-        message: "Password changed successfully" 
+      res.json({
+        success: true,
+        message: "Password changed successfully"
       });
     } catch (error) {
       console.error("Password change error:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "An error occurred while changing password" 
+      res.status(500).json({
+        success: false,
+        message: "An error occurred while changing password"
       });
     }
   });
@@ -108,29 +106,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         type: "contact"
       });
-      
+
       const contact = await storage.createContactSubmission(validatedData);
-      
+
       await sendContactEmail(validatedData);
-      
-      res.json({ 
-        success: true, 
+
+      res.json({
+        success: true,
         message: "Contact submission received successfully",
-        id: contact.id 
+        id: contact.id
       });
     } catch (error) {
       console.error("Contact submission error:", error);
-      
+
       if (error instanceof Error && error.name === "ZodError") {
-        res.status(400).json({ 
-          success: false, 
+        res.status(400).json({
+          success: false,
           message: "Invalid form data",
-          errors: error 
+          errors: error
         });
       } else {
-        res.status(500).json({ 
-          success: false, 
-          message: "Failed to process contact submission" 
+        res.status(500).json({
+          success: false,
+          message: "Failed to process contact submission"
         });
       }
     }
@@ -139,29 +137,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/mentor-application", async (req, res) => {
     try {
       const validatedData = insertMentorApplicationSchema.parse(req.body);
-      
+
       const application = await storage.createMentorApplication(validatedData);
-      
+
       await sendMentorApplicationEmail(validatedData);
-      
-      res.json({ 
-        success: true, 
+
+      res.json({
+        success: true,
         message: "Mentor application submitted successfully",
-        id: application.id 
+        id: application.id
       });
     } catch (error) {
       console.error("Mentor application error:", error);
-      
+
       if (error instanceof Error && error.name === "ZodError") {
-        res.status(400).json({ 
-          success: false, 
+        res.status(400).json({
+          success: false,
           message: "Invalid application data",
-          errors: error 
+          errors: error
         });
       } else {
-        res.status(500).json({ 
-          success: false, 
-          message: "Failed to process mentor application" 
+        res.status(500).json({
+          success: false,
+          message: "Failed to process mentor application"
         });
       }
     }
@@ -170,29 +168,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/partner-inquiry", async (req, res) => {
     try {
       const validatedData = insertPartnerApplicationSchema.parse(req.body);
-      
+
       const application = await storage.createPartnerApplication(validatedData);
-      
+
       await sendPartnerApplicationEmail(validatedData);
-      
-      res.json({ 
-        success: true, 
+
+      res.json({
+        success: true,
         message: "Partnership inquiry submitted successfully",
-        id: application.id 
+        id: application.id
       });
     } catch (error) {
       console.error("Partner inquiry error:", error);
-      
+
       if (error instanceof Error && error.name === "ZodError") {
-        res.status(400).json({ 
-          success: false, 
+        res.status(400).json({
+          success: false,
           message: "Invalid inquiry data",
-          errors: error 
+          errors: error
         });
       } else {
-        res.status(500).json({ 
-          success: false, 
-          message: "Failed to process partnership inquiry" 
+        res.status(500).json({
+          success: false,
+          message: "Failed to process partnership inquiry"
         });
       }
     }
@@ -201,29 +199,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/volunteer-application", async (req, res) => {
     try {
       const validatedData = insertVolunteerApplicationSchema.parse(req.body);
-      
+
       const application = await storage.createVolunteerApplication(validatedData);
-      
+
       await sendVolunteerApplicationEmail(validatedData);
-      
-      res.json({ 
-        success: true, 
+
+      res.json({
+        success: true,
         message: "Volunteer application submitted successfully",
-        id: application.id 
+        id: application.id
       });
     } catch (error) {
       console.error("Volunteer application error:", error);
-      
+
       if (error instanceof Error && error.name === "ZodError") {
-        res.status(400).json({ 
-          success: false, 
+        res.status(400).json({
+          success: false,
           message: "Invalid application data",
-          errors: error 
+          errors: error
         });
       } else {
-        res.status(500).json({ 
-          success: false, 
-          message: "Failed to process volunteer application" 
+        res.status(500).json({
+          success: false,
+          message: "Failed to process volunteer application"
         });
       }
     }
@@ -235,9 +233,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, data: submissions });
     } catch (error) {
       console.error("Error fetching contact submissions:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to fetch contact submissions" 
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch contact submissions"
       });
     }
   });
@@ -248,9 +246,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, data: events });
     } catch (error) {
       console.error("Error fetching events:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to fetch events" 
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch events"
       });
     }
   });
@@ -261,9 +259,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, data: events });
     } catch (error) {
       console.error("Error fetching upcoming events:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to fetch upcoming events" 
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch upcoming events"
       });
     }
   });
@@ -272,20 +270,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const event = await storage.getEvent(id);
-      
+
       if (!event) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "Event not found" 
+        return res.status(404).json({
+          success: false,
+          message: "Event not found"
         });
       }
-      
+
       res.json({ success: true, data: event });
     } catch (error) {
       console.error("Error fetching event:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to fetch event" 
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch event"
       });
     }
   });
@@ -293,12 +291,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/events/:id/register", async (req, res) => {
     try {
       const { id } = req.params;
-      
+
       const event = await storage.getEvent(id);
       if (!event) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "Event not found" 
+        return res.status(404).json({
+          success: false,
+          message: "Event not found"
         });
       }
 
@@ -310,9 +308,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const incrementSuccess = await storage.incrementEventRegisteredCount(id);
 
       if (!incrementSuccess) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Event is full" 
+        return res.status(400).json({
+          success: false,
+          message: "Event is full"
         });
       }
 
@@ -336,24 +334,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Failed to send confirmation email, but registration succeeded:", emailError);
       }
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: "Registration successful",
-        id: registration.id 
+        id: registration.id
       });
     } catch (error) {
       console.error("Event registration error:", error);
-      
+
       if (error instanceof Error && error.name === "ZodError") {
-        res.status(400).json({ 
-          success: false, 
+        res.status(400).json({
+          success: false,
           message: "Invalid registration data",
-          errors: error 
+          errors: error
         });
       } else {
-        res.status(500).json({ 
-          success: false, 
-          message: "Failed to process event registration" 
+        res.status(500).json({
+          success: false,
+          message: "Failed to process event registration"
         });
       }
     }
@@ -365,9 +363,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, data: posts });
     } catch (error) {
       console.error("Error fetching published blog posts:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to fetch blog posts" 
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch blog posts"
       });
     }
   });
@@ -379,9 +377,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, data: posts });
     } catch (error) {
       console.error("Error fetching blog posts by category:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to fetch blog posts" 
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch blog posts"
       });
     }
   });
@@ -390,20 +388,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const post = await storage.getBlogPostBySlug(slug);
-      
+
       if (!post) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "Blog post not found" 
+        return res.status(404).json({
+          success: false,
+          message: "Blog post not found"
         });
       }
-      
+
       res.json({ success: true, data: post });
     } catch (error) {
       console.error("Error fetching blog post:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to fetch blog post" 
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch blog post"
       });
     }
   });
@@ -411,11 +409,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/chat", async (req, res) => {
     try {
       const { messages } = req.body;
-      
+
       if (!messages || !Array.isArray(messages)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Invalid request: messages array required" 
+        return res.status(400).json({
+          success: false,
+          message: "Invalid request: messages array required"
         });
       }
 
@@ -554,14 +552,14 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
 
       res.write('data: [DONE]\n\n');
       res.end();
-      
+
     } catch (error) {
       console.error("Chat error:", error);
-      
+
       if (!res.headersSent) {
-        res.status(500).json({ 
-          success: false, 
-          message: "Failed to process chat request" 
+        res.status(500).json({
+          success: false,
+          message: "Failed to process chat request"
         });
       } else {
         res.end();
