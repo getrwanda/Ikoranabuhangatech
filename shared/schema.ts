@@ -136,6 +136,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertContactSchema = createInsertSchema(contactSubmissions).omit({
   id: true,
   createdAt: true,
+}).extend({
+  email: z.string().email("Valid email is required"),
 });
 
 export const mentorApplicationSchema = insertContactSchema.extend({
