@@ -47,7 +47,11 @@ export function useTableFilters<T>({
             const from = dateRange.from!;
             const to = dateRange.to || dateRange.from;
 
-            return itemDate >= from && itemDate <= to;
+            // Set end of day for 'to' date to include the entire day
+            const toEndOfDay = new Date(to);
+            toEndOfDay.setHours(23, 59, 59, 999);
+
+            return itemDate >= from && itemDate <= toEndOfDay;
         });
     }, [searchFiltered, dateRange, dateField]);
 
