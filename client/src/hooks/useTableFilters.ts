@@ -44,8 +44,8 @@ export function useTableFilters<T>({
 
         return searchFiltered.filter((item) => {
             const itemDate = new Date(item[dateField] as any);
-            const from = dateRange.from!;
-            const to = dateRange.to || dateRange.from;
+            const from = dateRange.from!; // Non-null assertion safe because of guard above
+            const to = dateRange.to ?? dateRange.from!;
 
             // Set end of day for 'to' date to include the entire day
             const toEndOfDay = new Date(to);
