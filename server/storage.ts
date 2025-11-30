@@ -1,23 +1,23 @@
-import { 
-  users, 
-  contactSubmissions, 
-  events, 
-  eventRegistrations, 
+import {
+  users,
+  contactSubmissions,
+  events,
+  eventRegistrations,
   blogPosts,
   partnerApplications,
   mentorApplications,
   volunteerApplications,
   students,
   mentorMatches,
-  type User, 
-  type InsertUser, 
-  type Contact, 
-  type InsertContact, 
-  type Event, 
-  type InsertEvent, 
-  type EventRegistration, 
-  type InsertEventRegistration, 
-  type BlogPost, 
+  type User,
+  type InsertUser,
+  type Contact,
+  type InsertContact,
+  type Event,
+  type InsertEvent,
+  type EventRegistration,
+  type InsertEventRegistration,
+  type BlogPost,
   type InsertBlogPost,
   type PartnerApplication,
   type InsertPartnerApplication,
@@ -86,6 +86,11 @@ export interface IStorage {
   updateMentorMatch(id: string, data: Partial<InsertMentorMatch>): Promise<MentorMatch | undefined>;
   deleteMentorMatch(id: string): Promise<void>;
   getMentorMatchesCount(): Promise<number>;
+  getDailySubmissionCounts(days: number): Promise<{ date: string; count: number }[]>;
+  bulkDeletePartnerApplications(ids: string[]): Promise<void>;
+  bulkDeleteMentorApplications(ids: string[]): Promise<void>;
+  bulkDeleteVolunteerApplications(ids: string[]): Promise<void>;
+  bulkDeleteContactSubmissions(ids: string[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -220,7 +225,7 @@ export class DatabaseStorage implements IStorage {
       .set({ registeredCount: sql`${events.registeredCount} + 1` })
       .where(sql`${events.id} = ${eventId} AND ${events.registeredCount} < ${events.capacity}`)
       .returning({ id: events.id });
-    
+
     return result.length > 0;
   }
 
@@ -458,8 +463,276 @@ export class DatabaseStorage implements IStorage {
   async getMentorMatchesCount(): Promise<number> {
     const result = await db
       .select({ count: sql<number>`count(*)` })
+    return await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.category, category))
+      .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getContactSubmissionsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(contactSubmissions);
+    return Number(result[0]?.count || 0);
+  }
+
+  async getPartnerApplicationsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(partnerApplications);
+    return Number(result[0]?.count || 0);
+  }
+
+  async getMentorApplicationsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(mentorApplications);
+    return Number(result[0]?.count || 0);
+  }
+
+  async getVolunteerApplicationsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(volunteerApplications);
+    return Number(result[0]?.count || 0);
+  }
+
+  async getAllEvents(): Promise<Event[]> {
+    return await db
+      .select()
+      .from(events)
+      .orderBy(desc(events.date));
+  }
+
+  async getEventsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(events);
+    return Number(result[0]?.count || 0);
+  }
+
+  async updateEvent(id: string, data: Partial<InsertEvent>): Promise<Event | undefined> {
+    const [event] = await db
+      .update(events)
+      .set(data)
+      .where(eq(events.id, id))
+      .returning();
+    return event || undefined;
+  }
+
+  async deleteEvent(id: string): Promise<void> {
+    await db.delete(events).where(eq(events.id, id));
+  }
+
+  async getAllBlogPosts(): Promise<BlogPost[]> {
+    return await db
+      .select()
+      .from(blogPosts)
+      .orderBy(desc(blogPosts.createdAt));
+  }
+
+  async getBlogPostById(id: string): Promise<BlogPost | undefined> {
+    const [post] = await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.id, id));
+    return post || undefined;
+  }
+
+  async getBlogPostsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(blogPosts);
+    return Number(result[0]?.count || 0);
+  }
+
+  async updateBlogPost(id: string, data: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const [post] = await db
+      .update(blogPosts)
+      .set(data)
+      .where(eq(blogPosts.id, id))
+      .returning();
+    return post || undefined;
+  }
+
+  async deleteBlogPost(id: string): Promise<void> {
+    await db.delete(blogPosts).where(eq(blogPosts.id, id));
+  }
+
+  async createStudent(insertStudent: InsertStudent): Promise<Student> {
+    const [student] = await db
+      .insert(students)
+      .values(insertStudent)
+      .returning();
+    return student;
+  }
+
+  async getStudents(): Promise<Student[]> {
+    return await db
+      .select()
+      .from(students)
+      .orderBy(desc(students.createdAt));
+  }
+
+  async getStudent(id: string): Promise<Student | undefined> {
+    const [student] = await db
+      .select()
+      .from(students)
+      .where(eq(students.id, id));
+    return student || undefined;
+  }
+
+  async updateStudent(id: string, data: Partial<InsertStudent>): Promise<Student | undefined> {
+    const [student] = await db
+      .update(students)
+      .set(data)
+      .where(eq(students.id, id))
+      .returning();
+    return student || undefined;
+  }
+
+  async deleteStudent(id: string): Promise<void> {
+    await db.delete(students).where(eq(students.id, id));
+  }
+
+  async getStudentsCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(students);
+    return Number(result[0]?.count || 0);
+  }
+
+  async createMentorMatch(insertMatch: InsertMentorMatch): Promise<MentorMatch> {
+    const [match] = await db
+      .insert(mentorMatches)
+      .values(insertMatch)
+      .returning();
+    return match;
+  }
+
+  async getMentorMatches(): Promise<MentorMatch[]> {
+    return await db
+      .select()
+      .from(mentorMatches)
+      .orderBy(desc(mentorMatches.createdAt));
+  }
+
+  async getMentorMatch(id: string): Promise<MentorMatch | undefined> {
+    const [match] = await db
+      .select()
+      .from(mentorMatches)
+      .where(eq(mentorMatches.id, id));
+    return match || undefined;
+  }
+
+  async getMentorMatchesByMentor(mentorId: string): Promise<MentorMatch[]> {
+    return await db
+      .select()
+      .from(mentorMatches)
+      .where(eq(mentorMatches.mentorId, mentorId))
+      .orderBy(desc(mentorMatches.createdAt));
+  }
+
+  async getMentorMatchesByStudent(studentId: string): Promise<MentorMatch[]> {
+    return await db
+      .select()
+      .from(mentorMatches)
+      .where(eq(mentorMatches.studentId, studentId))
+      .orderBy(desc(mentorMatches.createdAt));
+  }
+
+  async updateMentorMatch(id: string, data: Partial<InsertMentorMatch>): Promise<MentorMatch | undefined> {
+    const [match] = await db
+      .update(mentorMatches)
+      .set(data)
+      .where(eq(mentorMatches.id, id))
+      .returning();
+    return match || undefined;
+  }
+
+  async deleteMentorMatch(id: string): Promise<void> {
+    await db.delete(mentorMatches).where(eq(mentorMatches.id, id));
+  }
+
+  async getMentorMatchesCount(): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
       .from(mentorMatches);
     return Number(result[0]?.count || 0);
+  }
+
+  async getDailySubmissionCounts(days: number): Promise<{ date: string; count: number }[]> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    const partners = await db
+      .select({ createdAt: partnerApplications.createdAt })
+      .from(partnerApplications)
+      .where(gte(partnerApplications.createdAt, cutoffDate));
+
+    const mentors = await db
+      .select({ createdAt: mentorApplications.createdAt })
+      .from(mentorApplications)
+      .where(gte(mentorApplications.createdAt, cutoffDate));
+
+    const volunteers = await db
+      .select({ createdAt: volunteerApplications.createdAt })
+      .from(volunteerApplications)
+      .where(gte(volunteerApplications.createdAt, cutoffDate));
+
+    const contacts = await db
+      .select({ createdAt: contactSubmissions.createdAt })
+      .from(contactSubmissions)
+      .where(gte(contactSubmissions.createdAt, cutoffDate));
+
+    const allDates = [
+      ...partners.map(p => p.createdAt),
+      ...mentors.map(m => m.createdAt),
+      ...volunteers.map(v => v.createdAt),
+      ...contacts.map(c => c.createdAt)
+    ];
+
+    const counts: Record<string, number> = {};
+
+    // Initialize last 'days' days with 0
+    for (let i = 0; i < days; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      counts[key] = 0;
+    }
+
+    allDates.forEach(date => {
+      const key = new Date(date).toISOString().split('T')[0];
+      if (counts[key] !== undefined) {
+        counts[key]++;
+      }
+    });
+
+    return Object.entries(counts)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  async bulkDeletePartnerApplications(ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    await db.delete(partnerApplications).where(sql`${partnerApplications.id} IN ${ids}`);
+  }
+
+  async bulkDeleteMentorApplications(ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    await db.delete(mentorApplications).where(sql`${mentorApplications.id} IN ${ids}`);
+  }
+
+  async bulkDeleteVolunteerApplications(ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    await db.delete(volunteerApplications).where(sql`${volunteerApplications.id} IN ${ids}`);
+  }
+
+  async bulkDeleteContactSubmissions(ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    await db.delete(contactSubmissions).where(sql`${contactSubmissions.id} IN ${ids}`);
   }
 }
 

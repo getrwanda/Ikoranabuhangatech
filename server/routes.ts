@@ -599,6 +599,40 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     }
   });
 
+  app.get("/api/admin/analytics/timeline", requireAuth, async (req, res) => {
+    try {
+      const days = req.query.days ? parseInt(req.query.days as string) : 30;
+      const timeline = await storage.getDailySubmissionCounts(days);
+      res.json({ success: true, data: timeline });
+    } catch (error) {
+      console.error("Error fetching timeline analytics:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch timeline analytics" });
+    }
+  });
+
+  app.get("/api/admin/analytics/distribution", requireAuth, async (req, res) => {
+    try {
+      const [partnerCount, mentorCount, volunteerCount, contactCount] = await Promise.all([
+        storage.getPartnerApplicationsCount(),
+        storage.getMentorApplicationsCount(),
+        storage.getVolunteerApplicationsCount(),
+        storage.getContactSubmissionsCount(),
+      ]);
+
+      const distribution = [
+        { name: "Partners", value: partnerCount, fill: "#0ea5e9" }, // sky-500
+        { name: "Mentors", value: mentorCount, fill: "#8b5cf6" },   // violet-500
+        { name: "Volunteers", value: volunteerCount, fill: "#f43f5e" }, // rose-500
+        { name: "Contacts", value: contactCount, fill: "#10b981" }, // emerald-500
+      ];
+
+      res.json({ success: true, data: distribution });
+    } catch (error) {
+      console.error("Error fetching distribution analytics:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch distribution analytics" });
+    }
+  });
+
   app.get("/api/admin/blog", requireAuth, async (req, res) => {
     try {
       const posts = await storage.getAllBlogPosts();
@@ -753,6 +787,62 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     } catch (error) {
       console.error("Error fetching contact submissions:", error);
       res.status(500).json({ success: false, message: "Failed to fetch contact submissions" });
+    }
+  });
+
+  app.post("/api/admin/submissions/partners/bulk-delete", requireAuth, async (req, res) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids)) {
+        return res.status(400).json({ success: false, message: "Invalid request format" });
+      }
+      await storage.bulkDeletePartnerApplications(ids);
+      res.json({ success: true, message: "Partner applications deleted successfully" });
+    } catch (error) {
+      console.error("Error bulk deleting partner applications:", error);
+      res.status(500).json({ success: false, message: "Failed to delete partner applications" });
+    }
+  });
+
+  app.post("/api/admin/submissions/mentors/bulk-delete", requireAuth, async (req, res) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids)) {
+        return res.status(400).json({ success: false, message: "Invalid request format" });
+      }
+      await storage.bulkDeleteMentorApplications(ids);
+      res.json({ success: true, message: "Mentor applications deleted successfully" });
+    } catch (error) {
+      console.error("Error bulk deleting mentor applications:", error);
+      res.status(500).json({ success: false, message: "Failed to delete mentor applications" });
+    }
+  });
+
+  app.post("/api/admin/submissions/volunteers/bulk-delete", requireAuth, async (req, res) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids)) {
+        return res.status(400).json({ success: false, message: "Invalid request format" });
+      }
+      await storage.bulkDeleteVolunteerApplications(ids);
+      res.json({ success: true, message: "Volunteer applications deleted successfully" });
+    } catch (error) {
+      console.error("Error bulk deleting volunteer applications:", error);
+      res.status(500).json({ success: false, message: "Failed to delete volunteer applications" });
+    }
+  });
+
+  app.post("/api/admin/submissions/contacts/bulk-delete", requireAuth, async (req, res) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids)) {
+        return res.status(400).json({ success: false, message: "Invalid request format" });
+      }
+      await storage.bulkDeleteContactSubmissions(ids);
+      res.json({ success: true, message: "Contact submissions deleted successfully" });
+    } catch (error) {
+      console.error("Error bulk deleting contact submissions:", error);
+      res.status(500).json({ success: false, message: "Failed to delete contact submissions" });
     }
   });
 

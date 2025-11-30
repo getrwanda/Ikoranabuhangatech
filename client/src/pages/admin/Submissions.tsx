@@ -1,20 +1,59 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Download, Eye, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { exportToCSV } from "@/lib/exportCsv";
 import { TableSearch } from "@/components/admin/TableSearch";
 import { DateRangePicker } from "@/components/admin/DateRangePicker";
 import { TablePagination } from "@/components/admin/TablePagination";
+import { SubmissionDetailModal } from "@/components/admin/SubmissionDetailModal";
 import { useTableFilters } from "@/hooks/useTableFilters";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { PartnerApplication, MentorApplicationType, VolunteerApplicationType, Contact } from "@shared/schema";
 
+type SubmissionType = "partner" | "mentor" | "volunteer" | "contact";
+
 export default function Submissions() {
+  const [selectedSubmission, setSelectedSubmission] = useState<{ type: SubmissionType; data: any } | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async ({ type, ids }: { type: SubmissionType; ids: string[] }) => {
+      const endpoint = type === "partner" ? "partners"
+        : type === "mentor" ? "mentors"
+          : type === "volunteer" ? "volunteers"
+            : "contacts";
+      await apiRequest("POST", `/api/admin/submissions/${endpoint}/bulk-delete`, { ids });
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Selected items deleted successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/submissions/partners"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/submissions/mentors"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/submissions/volunteers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/submissions/contacts"] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete items", variant: "destructive" });
+    }
+  });
+
+  const handleBulkDelete = (type: SubmissionType, ids: string[], resetSelection: () => void) => {
+    if (confirm(`Are you sure you want to delete ${ids.length} items?`)) {
+      bulkDeleteMutation.mutate({ type, ids }, {
+        onSuccess: () => resetSelection()
+      });
+    }
+  };
+
   const { data: partners, isLoading: isLoadingPartners } = useQuery<{ success: boolean; data: PartnerApplication[] }>({
     queryKey: ["/api/admin/submissions/partners"],
   });
@@ -58,6 +97,10 @@ export default function Submissions() {
     searchFields: ["name", "email", "message"],
     dateField: "createdAt",
   });
+
+  const handleView = (type: SubmissionType, data: any) => {
+    setSelectedSubmission({ type, data });
+  };
 
   const handleExportPartners = () => {
     if (partners?.data) {
@@ -156,15 +199,27 @@ export default function Submissions() {
                 <CardHeader className="space-y-4">
                   <div className="flex flex-row items-center justify-between">
                     <CardTitle>Partner Applications</CardTitle>
-                    <Button
-                      variant="outline"
-                      onClick={handleExportPartners}
-                      disabled={!partners?.data || partners.data.length === 0}
-                      data-testid="button-export-partners"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export CSV
-                    </Button>
+                    <div className="flex gap-2">
+                      {partnerFilters.selectedIds.length > 0 && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleBulkDelete("partner", partnerFilters.selectedIds, partnerFilters.resetSelection)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete ({partnerFilters.selectedIds.length})
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        onClick={handleExportPartners}
+                        disabled={!partners?.data || partners.data.length === 0}
+                        data-testid="button-export-partners"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Export CSV
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <TableSearch
@@ -195,23 +250,48 @@ export default function Submissions() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[50px]">
+                              <Checkbox
+                                checked={partnerFilters.isAllSelected}
+                                onCheckedChange={(checked) => partnerFilters.toggleSelectAll(!!checked)}
+                                aria-label="Select all"
+                              />
+                            </TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Organization</TableHead>
                             <TableHead>Type</TableHead>
                             <TableHead>Location</TableHead>
                             <TableHead>Submitted</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {partnerFilters.data.map((app) => (
-                            <TableRow key={app.id} data-testid={`row-partner-${app.id}`}>
+                            <TableRow
+                              key={app.id}
+                              data-testid={`row-partner-${app.id}`}
+                              className="cursor-pointer hover:bg-muted/50"
+                              onClick={() => handleView("partner", app)}
+                            >
+                              <TableCell onClick={(e) => e.stopPropagation()}>
+                                <Checkbox
+                                  checked={partnerFilters.selectedIds.includes(String(app.id))}
+                                  onCheckedChange={() => partnerFilters.toggleSelection(String(app.id))}
+                                  aria-label={`Select ${app.name}`}
+                                />
+                              </TableCell>
                               <TableCell className="font-medium" data-testid={`text-name-${app.id}`}>{app.name}</TableCell>
                               <TableCell data-testid={`text-email-${app.id}`}>{app.email}</TableCell>
                               <TableCell data-testid={`text-organization-${app.id}`}>{app.organizationName}</TableCell>
                               <TableCell data-testid={`text-type-${app.id}`}>{app.organizationType}</TableCell>
                               <TableCell data-testid={`text-location-${app.id}`}>{app.location}</TableCell>
                               <TableCell data-testid={`text-date-${app.id}`}>{format(new Date(app.createdAt), "MMM d, yyyy")}</TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleView("partner", app); }}>
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -237,15 +317,27 @@ export default function Submissions() {
                 <CardHeader className="space-y-4">
                   <div className="flex flex-row items-center justify-between">
                     <CardTitle>Mentor Applications</CardTitle>
-                    <Button
-                      variant="outline"
-                      onClick={handleExportMentors}
-                      disabled={!mentors?.data || mentors.data.length === 0}
-                      data-testid="button-export-mentors"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export CSV
-                    </Button>
+                    <div className="flex gap-2">
+                      {mentorFilters.selectedIds.length > 0 && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleBulkDelete("mentor", mentorFilters.selectedIds, mentorFilters.resetSelection)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete ({mentorFilters.selectedIds.length})
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        onClick={handleExportMentors}
+                        disabled={!mentors?.data || mentors.data.length === 0}
+                        data-testid="button-export-mentors"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Export CSV
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <TableSearch
@@ -276,17 +368,37 @@ export default function Submissions() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[50px]">
+                              <Checkbox
+                                checked={mentorFilters.isAllSelected}
+                                onCheckedChange={(checked) => mentorFilters.toggleSelectAll(!!checked)}
+                                aria-label="Select all"
+                              />
+                            </TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Title</TableHead>
                             <TableHead>Experience</TableHead>
                             <TableHead>Expertise</TableHead>
                             <TableHead>Submitted</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {mentorFilters.data.map((app) => (
-                            <TableRow key={app.id} data-testid={`row-mentor-${app.id}`}>
+                            <TableRow
+                              key={app.id}
+                              data-testid={`row-mentor-${app.id}`}
+                              className="cursor-pointer hover:bg-muted/50"
+                              onClick={() => handleView("mentor", app)}
+                            >
+                              <TableCell onClick={(e) => e.stopPropagation()}>
+                                <Checkbox
+                                  checked={mentorFilters.selectedIds.includes(String(app.id))}
+                                  onCheckedChange={() => mentorFilters.toggleSelection(String(app.id))}
+                                  aria-label={`Select ${app.name}`}
+                                />
+                              </TableCell>
                               <TableCell className="font-medium" data-testid={`text-name-${app.id}`}>{app.name}</TableCell>
                               <TableCell data-testid={`text-email-${app.id}`}>{app.email}</TableCell>
                               <TableCell data-testid={`text-title-${app.id}`}>{app.professionalTitle}</TableCell>
@@ -296,6 +408,11 @@ export default function Submissions() {
                                 {Array.isArray(app.expertiseAreas) && app.expertiseAreas.length > 2 ? "..." : ""}
                               </TableCell>
                               <TableCell data-testid={`text-date-${app.id}`}>{format(new Date(app.createdAt), "MMM d, yyyy")}</TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleView("mentor", app); }}>
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -321,15 +438,27 @@ export default function Submissions() {
                 <CardHeader className="space-y-4">
                   <div className="flex flex-row items-center justify-between">
                     <CardTitle>Volunteer Applications</CardTitle>
-                    <Button
-                      variant="outline"
-                      onClick={handleExportVolunteers}
-                      disabled={!volunteers?.data || volunteers.data.length === 0}
-                      data-testid="button-export-volunteers"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export CSV
-                    </Button>
+                    <div className="flex gap-2">
+                      {volunteerFilters.selectedIds.length > 0 && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleBulkDelete("volunteer", volunteerFilters.selectedIds, volunteerFilters.resetSelection)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete ({volunteerFilters.selectedIds.length})
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        onClick={handleExportVolunteers}
+                        disabled={!volunteers?.data || volunteers.data.length === 0}
+                        data-testid="button-export-volunteers"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Export CSV
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <TableSearch
@@ -360,17 +489,37 @@ export default function Submissions() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[50px]">
+                              <Checkbox
+                                checked={volunteerFilters.isAllSelected}
+                                onCheckedChange={(checked) => volunteerFilters.toggleSelectAll(!!checked)}
+                                aria-label="Select all"
+                              />
+                            </TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Skills</TableHead>
                             <TableHead>Availability</TableHead>
                             <TableHead>Time Commitment</TableHead>
                             <TableHead>Submitted</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {volunteerFilters.data.map((app) => (
-                            <TableRow key={app.id} data-testid={`row-volunteer-${app.id}`}>
+                            <TableRow
+                              key={app.id}
+                              data-testid={`row-volunteer-${app.id}`}
+                              className="cursor-pointer hover:bg-muted/50"
+                              onClick={() => handleView("volunteer", app)}
+                            >
+                              <TableCell onClick={(e) => e.stopPropagation()}>
+                                <Checkbox
+                                  checked={volunteerFilters.selectedIds.includes(String(app.id))}
+                                  onCheckedChange={() => volunteerFilters.toggleSelection(String(app.id))}
+                                  aria-label={`Select ${app.name}`}
+                                />
+                              </TableCell>
                               <TableCell className="font-medium" data-testid={`text-name-${app.id}`}>{app.name}</TableCell>
                               <TableCell data-testid={`text-email-${app.id}`}>{app.email}</TableCell>
                               <TableCell data-testid={`text-skills-${app.id}`}>
@@ -380,6 +529,11 @@ export default function Submissions() {
                               <TableCell data-testid={`text-availability-${app.id}`}>{app.availabilityFrequency}</TableCell>
                               <TableCell data-testid={`text-commitment-${app.id}`}>{app.timeCommitment}</TableCell>
                               <TableCell data-testid={`text-date-${app.id}`}>{format(new Date(app.createdAt), "MMM d, yyyy")}</TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleView("volunteer", app); }}>
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -405,15 +559,27 @@ export default function Submissions() {
                 <CardHeader className="space-y-4">
                   <div className="flex flex-row items-center justify-between">
                     <CardTitle>Contact Submissions</CardTitle>
-                    <Button
-                      variant="outline"
-                      onClick={handleExportContacts}
-                      disabled={!contacts?.data || contacts.data.length === 0}
-                      data-testid="button-export-contacts"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export CSV
-                    </Button>
+                    <div className="flex gap-2">
+                      {contactFilters.selectedIds.length > 0 && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleBulkDelete("contact", contactFilters.selectedIds, contactFilters.resetSelection)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete ({contactFilters.selectedIds.length})
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        onClick={handleExportContacts}
+                        disabled={!contacts?.data || contacts.data.length === 0}
+                        data-testid="button-export-contacts"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Export CSV
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <TableSearch
@@ -444,16 +610,36 @@ export default function Submissions() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[50px]">
+                              <Checkbox
+                                checked={contactFilters.isAllSelected}
+                                onCheckedChange={(checked) => contactFilters.toggleSelectAll(!!checked)}
+                                aria-label="Select all"
+                              />
+                            </TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Message</TableHead>
                             <TableHead>Type</TableHead>
                             <TableHead>Submitted</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {contactFilters.data.map((contact) => (
-                            <TableRow key={contact.id} data-testid={`row-contact-${contact.id}`}>
+                            <TableRow
+                              key={contact.id}
+                              data-testid={`row-contact-${contact.id}`}
+                              className="cursor-pointer hover:bg-muted/50"
+                              onClick={() => handleView("contact", contact)}
+                            >
+                              <TableCell onClick={(e) => e.stopPropagation()}>
+                                <Checkbox
+                                  checked={contactFilters.selectedIds.includes(String(contact.id))}
+                                  onCheckedChange={() => contactFilters.toggleSelection(String(contact.id))}
+                                  aria-label={`Select ${contact.name}`}
+                                />
+                              </TableCell>
                               <TableCell className="font-medium" data-testid={`text-name-${contact.id}`}>{contact.name}</TableCell>
                               <TableCell data-testid={`text-email-${contact.id}`}>{contact.email}</TableCell>
                               <TableCell data-testid={`text-message-${contact.id}`}>
@@ -461,6 +647,11 @@ export default function Submissions() {
                               </TableCell>
                               <TableCell data-testid={`text-type-${contact.id}`}>{contact.type}</TableCell>
                               <TableCell data-testid={`text-date-${contact.id}`}>{format(new Date(contact.createdAt), "MMM d, yyyy")}</TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleView("contact", contact); }}>
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -481,6 +672,15 @@ export default function Submissions() {
               </Card>
             </TabsContent>
           </Tabs>
+
+          {selectedSubmission && (
+            <SubmissionDetailModal
+              isOpen={!!selectedSubmission}
+              onClose={() => setSelectedSubmission(null)}
+              type={selectedSubmission.type}
+              data={selectedSubmission.data}
+            />
+          )}
         </div>
       </AdminLayout>
     </ProtectedRoute>

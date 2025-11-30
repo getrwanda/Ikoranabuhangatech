@@ -128,6 +128,18 @@ export const mentorMatches = pgTable("mentor_matches", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const activityLogs = pgTable("activity_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  action: text("action").notNull(), // 'login', 'logout', 'export', 'delete', 'create', 'update'
+  resourceType: text("resource_type"), // 'partner', 'mentor', 'volunteer', 'contact', 'blog', 'event', etc.
+  resourceId: varchar("resource_id"),
+  details: text("details"), // JSON string with additional details
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -262,3 +274,4 @@ export type InsertStudent = z.infer<typeof insertStudentSchema>;
 export type Student = typeof students.$inferSelect;
 export type InsertMentorMatch = z.infer<typeof insertMentorMatchSchema>;
 export type MentorMatch = typeof mentorMatches.$inferSelect;
+export type ActivityLog = typeof activityLogs.$inferSelect;

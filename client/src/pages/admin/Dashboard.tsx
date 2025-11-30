@@ -3,6 +3,8 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Calendar, Users, Mail } from "lucide-react";
+import { SubmissionsOverTimeChart } from "@/components/admin/charts/SubmissionsOverTimeChart";
+import { ApplicationDistributionChart } from "@/components/admin/charts/ApplicationDistributionChart";
 
 interface DashboardStatsResponse {
   success: boolean;
@@ -124,6 +126,11 @@ export default function AdminDashboard() {
               ))}
             </div>
           )}
+
+          <div className="grid gap-6 md:grid-cols-7">
+            <SubmissionsOverTimeChart />
+            <ApplicationDistributionChart />
+          </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>

@@ -16,6 +16,7 @@ export function useTableFilters<T>({
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(25);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     // Filter data based on search query
     const searchFiltered = useMemo(() => {
@@ -68,16 +69,38 @@ export function useTableFilters<T>({
     const handleSearchChange = (query: string) => {
         setSearchQuery(query);
         setCurrentPage(1);
+        setSelectedIds(new Set()); // Clear selection on search
     };
 
     const handleDateRangeChange = (range: DateRange | undefined) => {
         setDateRange(range);
         setCurrentPage(1);
+        setSelectedIds(new Set()); // Clear selection on date change
     };
 
     const handlePageSizeChange = (size: number) => {
         setPageSize(size);
         setCurrentPage(1);
+    };
+
+    const handleSelect = (id: string) => {
+        const newSelected = new Set(selectedIds);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedIds(newSelected);
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            // Select all items in the current filtered view
+            const allIds = dateFiltered.map((item: any) => String(item.id));
+            setSelectedIds(new Set(allIds));
+        } else {
+            setSelectedIds(new Set());
+        }
     };
 
     return {
@@ -99,5 +122,12 @@ export function useTableFilters<T>({
         pageSize,
         setPageSize: handlePageSizeChange,
         totalPages,
+
+        // Selection state
+        selectedIds: Array.from(selectedIds),
+        toggleSelection: handleSelect,
+        toggleSelectAll: handleSelectAll,
+        resetSelection: () => setSelectedIds(new Set()),
+        isAllSelected: dateFiltered.length > 0 && selectedIds.size === dateFiltered.length,
     };
 }
