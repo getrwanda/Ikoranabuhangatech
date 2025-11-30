@@ -1,6 +1,13 @@
 import { useState, useMemo } from "react";
 import { DateRange } from "react-day-picker";
 
+type SortDirection = "asc" | "desc" | null;
+
+interface SortConfig<T> {
+    key: keyof T | null;
+    direction: SortDirection;
+}
+
 interface UseTableFiltersOptions<T> {
     data: T[];
     searchFields: (keyof T)[];
@@ -17,6 +24,7 @@ export function useTableFilters<T>({
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(25);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [sortConfig, setSortConfig] = useState<SortConfig<T>>({ key: null, direction: null });
 
     // Filter data based on search query
     const searchFiltered = useMemo(() => {
@@ -56,14 +64,51 @@ export function useTableFilters<T>({
         });
     }, [searchFiltered, dateRange, dateField]);
 
-    // Paginate filtered data
+    // Sort filtered data
+    const sortedData = useMemo(() => {
+        if (!sortConfig.key || !sortConfig.direction) return dateFiltered;
+
+        return [...dateFiltered].sort((a, b) => {
+            const aValue = a[sortConfig.key!];
+            const bValue = b[sortConfig.key!];
+
+            // Handle null/undefined
+            if (aValue == null && bValue == null) return 0;
+            if (aValue == null) return 1;
+            if (bValue == null) return -1;
+
+            // Handle different types
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+                const comparison = aValue.toLowerCase().localeCompare(bValue.toLowerCase());
+                return sortConfig.direction === 'asc' ? comparison : -comparison;
+            }
+
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+                return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+            }
+
+            if (aValue instanceof Date && bValue instanceof Date) {
+                return sortConfig.direction === 'asc'
+                    ? aValue.getTime() - bValue.getTime()
+                    : bValue.getTime() - aValue.getTime();
+            }
+
+            // Default string comparison
+            const aStr = String(aValue);
+            const bStr = String(bValue);
+            const comparison = aStr.localeCompare(bStr);
+            return sortConfig.direction === 'asc' ? comparison : -comparison;
+        });
+    }, [dateFiltered, sortConfig]);
+
+    // Paginate sorted data
     const paginatedData = useMemo(() => {
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = startIndex + pageSize;
-        return dateFiltered.slice(startIndex, endIndex);
-    }, [dateFiltered, currentPage, pageSize]);
+        return sortedData.slice(startIndex, endIndex);
+    }, [sortedData, currentPage, pageSize]);
 
-    const totalPages = Math.ceil(dateFiltered.length / pageSize);
+    const totalPages = Math.ceil(sortedData.length / pageSize);
 
     // Reset to page 1 when filters change
     const handleSearchChange = (query: string) => {
@@ -103,10 +148,26 @@ export function useTableFilters<T>({
         }
     };
 
+    const handleSort = (key: keyof T) => {
+        setSortConfig((current) => {
+            // If clicking the same column, cycle through: asc -> desc -> null
+            if (current.key === key) {
+                if (current.direction === 'asc') {
+                    return { key, direction: 'desc' };
+                } else if (current.direction === 'desc') {
+                    return { key: null, direction: null };
+                }
+            }
+            // New column, start with asc
+            return { key, direction: 'asc' };
+        });
+        setCurrentPage(1); // Reset to first page when sorting
+    };
+
     return {
         // Filtered and paginated data
         data: paginatedData,
-        totalItems: dateFiltered.length,
+        totalItems: sortedData.length,
 
         // Search state
         searchQuery,
@@ -129,5 +190,10 @@ export function useTableFilters<T>({
         toggleSelectAll: handleSelectAll,
         resetSelection: () => setSelectedIds(new Set()),
         isAllSelected: dateFiltered.length > 0 && selectedIds.size === dateFiltered.length,
+
+        // Sort state
+        sortConfig,
+        handleSort,
+        getSortDirection: (key: keyof T) => sortConfig.key === key ? sortConfig.direction : null,
     };
 }

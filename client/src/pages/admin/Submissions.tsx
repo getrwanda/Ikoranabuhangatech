@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Download, Eye, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { exportToCSV } from "@/lib/exportCsv";
@@ -17,6 +18,9 @@ import { SubmissionDetailModal } from "@/components/admin/SubmissionDetailModal"
 import { useTableFilters } from "@/hooks/useTableFilters";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { TableSkeleton } from "@/components/admin/TableSkeleton";
+import { NoResultsState, NoDataState } from "@/components/admin/EmptyState";
+import { SortableTableHead } from "@/components/admin/SortableTableHead";
 import type { PartnerApplication, MentorApplicationType, VolunteerApplicationType, Contact } from "@shared/schema";
 
 type SubmissionType = "partner" | "mentor" | "volunteer" | "contact";
@@ -240,11 +244,13 @@ export default function Submissions() {
                 </CardHeader>
                 <CardContent>
                   {isLoadingPartners ? (
-                    <div className="text-center py-8">Loading...</div>
+                    <TableSkeleton rows={5} />
                   ) : partnerFilters.totalItems === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      {partnerFilters.searchQuery || partnerFilters.dateRange ? 'No results found' : 'No partner applications yet'}
-                    </div>
+                    partnerFilters.searchQuery || partnerFilters.dateRange ? (
+                      <NoResultsState />
+                    ) : (
+                      <NoDataState type="partner applications" />
+                    )
                   ) : (
                     <>
                       <Table>
@@ -257,12 +263,54 @@ export default function Submissions() {
                                 aria-label="Select all"
                               />
                             </TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Organization</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Location</TableHead>
-                            <TableHead>Submitted</TableHead>
+                            <SortableTableHead
+                              sortKey="name"
+                              currentSort={partnerFilters.sortConfig.key as string}
+                              direction={partnerFilters.getSortDirection("name" as keyof PartnerApplication)}
+                              onSort={() => partnerFilters.handleSort("name" as keyof PartnerApplication)}
+                            >
+                              Name
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="email"
+                              currentSort={partnerFilters.sortConfig.key as string}
+                              direction={partnerFilters.getSortDirection("email" as keyof PartnerApplication)}
+                              onSort={() => partnerFilters.handleSort("email" as keyof PartnerApplication)}
+                            >
+                              Email
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="organizationName"
+                              currentSort={partnerFilters.sortConfig.key as string}
+                              direction={partnerFilters.getSortDirection("organizationName" as keyof PartnerApplication)}
+                              onSort={() => partnerFilters.handleSort("organizationName" as keyof PartnerApplication)}
+                            >
+                              Organization
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="organizationType"
+                              currentSort={partnerFilters.sortConfig.key as string}
+                              direction={partnerFilters.getSortDirection("organizationType" as keyof PartnerApplication)}
+                              onSort={() => partnerFilters.handleSort("organizationType" as keyof PartnerApplication)}
+                            >
+                              Type
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="location"
+                              currentSort={partnerFilters.sortConfig.key as string}
+                              direction={partnerFilters.getSortDirection("location" as keyof PartnerApplication)}
+                              onSort={() => partnerFilters.handleSort("location" as keyof PartnerApplication)}
+                            >
+                              Location
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="createdAt"
+                              currentSort={partnerFilters.sortConfig.key as string}
+                              direction={partnerFilters.getSortDirection("createdAt" as keyof PartnerApplication)}
+                              onSort={() => partnerFilters.handleSort("createdAt" as keyof PartnerApplication)}
+                            >
+                              Submitted
+                            </SortableTableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -358,11 +406,13 @@ export default function Submissions() {
                 </CardHeader>
                 <CardContent>
                   {isLoadingMentors ? (
-                    <div className="text-center py-8">Loading...</div>
+                    <TableSkeleton rows={5} />
                   ) : mentorFilters.totalItems === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      {mentorFilters.searchQuery || mentorFilters.dateRange ? 'No results found' : 'No mentor applications yet'}
-                    </div>
+                    mentorFilters.searchQuery || mentorFilters.dateRange ? (
+                      <NoResultsState />
+                    ) : (
+                      <NoDataState type="mentor applications" />
+                    )
                   ) : (
                     <>
                       <Table>
@@ -404,8 +454,22 @@ export default function Submissions() {
                               <TableCell data-testid={`text-title-${app.id}`}>{app.professionalTitle}</TableCell>
                               <TableCell data-testid={`text-experience-${app.id}`}>{app.yearsOfExperience}</TableCell>
                               <TableCell data-testid={`text-expertise-${app.id}`}>
-                                {Array.isArray(app.expertiseAreas) ? app.expertiseAreas.slice(0, 2).join(", ") : ""}
-                                {Array.isArray(app.expertiseAreas) && app.expertiseAreas.length > 2 ? "..." : ""}
+                                {Array.isArray(app.expertiseAreas) && app.expertiseAreas.length > 2 ? (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="cursor-help">
+                                          {app.expertiseAreas.slice(0, 2).join(", ")}...
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="max-w-xs">{app.expertiseAreas.join(", ")}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                ) : (
+                                  Array.isArray(app.expertiseAreas) ? app.expertiseAreas.join(", ") : ""
+                                )}
                               </TableCell>
                               <TableCell data-testid={`text-date-${app.id}`}>{format(new Date(app.createdAt), "MMM d, yyyy")}</TableCell>
                               <TableCell className="text-right">
@@ -479,11 +543,13 @@ export default function Submissions() {
                 </CardHeader>
                 <CardContent>
                   {isLoadingVolunteers ? (
-                    <div className="text-center py-8">Loading...</div>
+                    <TableSkeleton rows={5} />
                   ) : volunteerFilters.totalItems === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      {volunteerFilters.searchQuery || volunteerFilters.dateRange ? 'No results found' : 'No volunteer applications yet'}
-                    </div>
+                    volunteerFilters.searchQuery || volunteerFilters.dateRange ? (
+                      <NoResultsState />
+                    ) : (
+                      <NoDataState type="volunteer applications" />
+                    )
                   ) : (
                     <>
                       <Table>
@@ -523,8 +589,22 @@ export default function Submissions() {
                               <TableCell className="font-medium" data-testid={`text-name-${app.id}`}>{app.name}</TableCell>
                               <TableCell data-testid={`text-email-${app.id}`}>{app.email}</TableCell>
                               <TableCell data-testid={`text-skills-${app.id}`}>
-                                {Array.isArray(app.skills) ? app.skills.slice(0, 2).join(", ") : ""}
-                                {Array.isArray(app.skills) && app.skills.length > 2 ? "..." : ""}
+                                {Array.isArray(app.skills) && app.skills.length > 2 ? (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="cursor-help">
+                                          {app.skills.slice(0, 2).join(", ")}...
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="max-w-xs">{app.skills.join(", ")}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                ) : (
+                                  Array.isArray(app.skills) ? app.skills.join(", ") : ""
+                                )}
                               </TableCell>
                               <TableCell data-testid={`text-availability-${app.id}`}>{app.availabilityFrequency}</TableCell>
                               <TableCell data-testid={`text-commitment-${app.id}`}>{app.timeCommitment}</TableCell>
@@ -600,11 +680,13 @@ export default function Submissions() {
                 </CardHeader>
                 <CardContent>
                   {isLoadingContacts ? (
-                    <div className="text-center py-8">Loading...</div>
+                    <TableSkeleton rows={5} />
                   ) : contactFilters.totalItems === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      {contactFilters.searchQuery || contactFilters.dateRange ? 'No results found' : 'No contact submissions yet'}
-                    </div>
+                    contactFilters.searchQuery || contactFilters.dateRange ? (
+                      <NoResultsState />
+                    ) : (
+                      <NoDataState type="contact submissions" />
+                    )
                   ) : (
                     <>
                       <Table>

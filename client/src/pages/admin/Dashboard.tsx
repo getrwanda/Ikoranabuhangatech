@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Calendar, Users, Mail } from "lucide-react";
 import { SubmissionsOverTimeChart } from "@/components/admin/charts/SubmissionsOverTimeChart";
 import { ApplicationDistributionChart } from "@/components/admin/charts/ApplicationDistributionChart";
+import { DashboardSkeleton } from "@/components/admin/DashboardSkeleton";
 
 interface DashboardStatsResponse {
   success: boolean;
@@ -94,19 +95,7 @@ export default function AdminDashboard() {
           </div>
 
           {isLoading ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <Card key={i}>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <div className="h-5 bg-gray-200 rounded w-1/2 animate-pulse"></div>
-                    <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse"></div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-8 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <DashboardSkeleton />
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {statsCards.map((stat, index) => (
