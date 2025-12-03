@@ -2,10 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Calendar, Users, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FileText, Calendar, Users, Mail, Download } from "lucide-react";
 import { SubmissionsOverTimeChart } from "@/components/admin/charts/SubmissionsOverTimeChart";
 import { ApplicationDistributionChart } from "@/components/admin/charts/ApplicationDistributionChart";
 import { DashboardSkeleton } from "@/components/admin/DashboardSkeleton";
+import { TrendIndicator } from "@/components/admin/TrendIndicator";
+import { DateRangeSelector } from "@/components/admin/DateRangeSelector";
+import { DateRange } from "react-day-picker";
+import React from "react";
 
 interface DashboardStatsResponse {
   success: boolean;
@@ -22,9 +27,36 @@ interface DashboardStatsResponse {
 }
 
 export default function AdminDashboard() {
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+    from: new Date(new Date().setDate(new Date().getDate() - 30)),
+    to: new Date(),
+  });
+
   const { data: stats, isLoading } = useQuery<DashboardStatsResponse>({
     queryKey: ["/api/admin/dashboard-stats"],
   });
+
+  const { data: comparison } = useQuery<{
+    success: boolean;
+    data: {
+      changes: {
+        partners: number;
+        mentors: number;
+        volunteers: number;
+        contacts: number;
+      };
+    };
+  }>({
+    queryKey: ["/api/admin/dashboard-comparison"],
+  });
+
+  const handleExport = () => {
+    const queryParams = new URLSearchParams();
+    if (dateRange?.from) queryParams.set("startDate", dateRange.from.toISOString());
+    if (dateRange?.to) queryParams.set("endDate", dateRange.to.toISOString());
+
+    window.location.href = `/api/admin/export/dashboard?${queryParams.toString()}`;
+  };
 
   const statsCards = [
     {
@@ -61,6 +93,7 @@ export default function AdminDashboard() {
       icon: Users,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
+      trend: comparison?.data?.changes?.partners,
     },
     {
       title: "Mentor Applications",
@@ -68,6 +101,7 @@ export default function AdminDashboard() {
       icon: Users,
       color: "text-orange-600",
       bgColor: "bg-orange-100",
+      trend: comparison?.data?.changes?.mentors,
     },
     {
       title: "Volunteer Applications",
@@ -75,6 +109,7 @@ export default function AdminDashboard() {
       icon: Users,
       color: "text-pink-600",
       bgColor: "bg-pink-100",
+      trend: comparison?.data?.changes?.volunteers,
     },
     {
       title: "Contact Submissions",
@@ -82,6 +117,7 @@ export default function AdminDashboard() {
       icon: Mail,
       color: "text-cyan-600",
       bgColor: "bg-cyan-100",
+      trend: comparison?.data?.changes?.contacts,
     },
   ];
 
@@ -89,9 +125,18 @@ export default function AdminDashboard() {
     <ProtectedRoute>
       <AdminLayout>
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-heading font-bold text-primary">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome to the admin dashboard</p>
+          <div className="flex items-center justify-between space-y-2">
+            <div>
+              <h1 className="text-3xl font-heading font-bold text-primary">Dashboard</h1>
+              <p className="text-muted-foreground">Welcome to the admin dashboard</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <DateRangeSelector date={dateRange} setDate={setDateRange} />
+              <Button onClick={handleExport} variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </div>
           </div>
 
           {isLoading ? (
@@ -107,9 +152,19 @@ export default function AdminDashboard() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold" data-testid={`stat-value-${index}`}>
-                      {stat.value}
+                    <div className="flex items-center justify-between">
+                      <div className="text-3xl font-bold" data-testid={`stat-value-${index}`}>
+                        {stat.value}
+                      </div>
+                      {stat.trend !== undefined && (
+                        <TrendIndicator value={stat.trend} />
+                      )}
                     </div>
+                    {stat.trend !== undefined && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        vs. previous 30 days
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -117,7 +172,7 @@ export default function AdminDashboard() {
           )}
 
           <div className="grid gap-6 md:grid-cols-7">
-            <SubmissionsOverTimeChart />
+            <SubmissionsOverTimeChart dateRange={dateRange} />
             <ApplicationDistributionChart />
           </div>
 

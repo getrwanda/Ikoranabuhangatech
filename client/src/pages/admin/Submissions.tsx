@@ -50,6 +50,14 @@ export default function Submissions() {
     }
   });
 
+  const handleExport = (type: SubmissionType) => {
+    const endpoint = type === "partner" ? "partners"
+      : type === "mentor" ? "mentors"
+        : type === "volunteer" ? "volunteers"
+          : "contacts";
+    window.location.href = `/api/admin/export/${endpoint}`;
+  };
+
   const handleBulkDelete = (type: SubmissionType, ids: string[], resetSelection: () => void) => {
     if (confirm(`Are you sure you want to delete ${ids.length} items?`)) {
       bulkDeleteMutation.mutate({ type, ids }, {
@@ -216,7 +224,7 @@ export default function Submissions() {
                       )}
                       <Button
                         variant="outline"
-                        onClick={handleExportPartners}
+                        onClick={() => handleExport("partner")}
                         disabled={!partners?.data || partners.data.length === 0}
                         data-testid="button-export-partners"
                       >
@@ -378,7 +386,7 @@ export default function Submissions() {
                       )}
                       <Button
                         variant="outline"
-                        onClick={handleExportMentors}
+                        onClick={() => handleExport("mentor")}
                         disabled={!mentors?.data || mentors.data.length === 0}
                         data-testid="button-export-mentors"
                       >
@@ -425,12 +433,47 @@ export default function Submissions() {
                                 aria-label="Select all"
                               />
                             </TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Title</TableHead>
-                            <TableHead>Experience</TableHead>
+                            <SortableTableHead
+                              sortKey="name"
+                              currentSort={mentorFilters.sortConfig.key as string}
+                              direction={mentorFilters.getSortDirection("name" as keyof MentorApplicationType)}
+                              onSort={() => mentorFilters.handleSort("name" as keyof MentorApplicationType)}
+                            >
+                              Name
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="email"
+                              currentSort={mentorFilters.sortConfig.key as string}
+                              direction={mentorFilters.getSortDirection("email" as keyof MentorApplicationType)}
+                              onSort={() => mentorFilters.handleSort("email" as keyof MentorApplicationType)}
+                            >
+                              Email
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="professionalTitle"
+                              currentSort={mentorFilters.sortConfig.key as string}
+                              direction={mentorFilters.getSortDirection("professionalTitle" as keyof MentorApplicationType)}
+                              onSort={() => mentorFilters.handleSort("professionalTitle" as keyof MentorApplicationType)}
+                            >
+                              Title
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="yearsOfExperience"
+                              currentSort={mentorFilters.sortConfig.key as string}
+                              direction={mentorFilters.getSortDirection("yearsOfExperience" as keyof MentorApplicationType)}
+                              onSort={() => mentorFilters.handleSort("yearsOfExperience" as keyof MentorApplicationType)}
+                            >
+                              Experience
+                            </SortableTableHead>
                             <TableHead>Expertise</TableHead>
-                            <TableHead>Submitted</TableHead>
+                            <SortableTableHead
+                              sortKey="createdAt"
+                              currentSort={mentorFilters.sortConfig.key as string}
+                              direction={mentorFilters.getSortDirection("createdAt" as keyof MentorApplicationType)}
+                              onSort={() => mentorFilters.handleSort("createdAt" as keyof MentorApplicationType)}
+                            >
+                              Submitted
+                            </SortableTableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -515,7 +558,7 @@ export default function Submissions() {
                       )}
                       <Button
                         variant="outline"
-                        onClick={handleExportVolunteers}
+                        onClick={() => handleExport("volunteer")}
                         disabled={!volunteers?.data || volunteers.data.length === 0}
                         data-testid="button-export-volunteers"
                       >
@@ -562,12 +605,47 @@ export default function Submissions() {
                                 aria-label="Select all"
                               />
                             </TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
+                            <SortableTableHead
+                              sortKey="name"
+                              currentSort={volunteerFilters.sortConfig.key as string}
+                              direction={volunteerFilters.getSortDirection("name" as keyof VolunteerApplicationType)}
+                              onSort={() => volunteerFilters.handleSort("name" as keyof VolunteerApplicationType)}
+                            >
+                              Name
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="email"
+                              currentSort={volunteerFilters.sortConfig.key as string}
+                              direction={volunteerFilters.getSortDirection("email" as keyof VolunteerApplicationType)}
+                              onSort={() => volunteerFilters.handleSort("email" as keyof VolunteerApplicationType)}
+                            >
+                              Email
+                            </SortableTableHead>
                             <TableHead>Skills</TableHead>
-                            <TableHead>Availability</TableHead>
-                            <TableHead>Time Commitment</TableHead>
-                            <TableHead>Submitted</TableHead>
+                            <SortableTableHead
+                              sortKey="availabilityFrequency"
+                              currentSort={volunteerFilters.sortConfig.key as string}
+                              direction={volunteerFilters.getSortDirection("availabilityFrequency" as keyof VolunteerApplicationType)}
+                              onSort={() => volunteerFilters.handleSort("availabilityFrequency" as keyof VolunteerApplicationType)}
+                            >
+                              Availability
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="timeCommitment"
+                              currentSort={volunteerFilters.sortConfig.key as string}
+                              direction={volunteerFilters.getSortDirection("timeCommitment" as keyof VolunteerApplicationType)}
+                              onSort={() => volunteerFilters.handleSort("timeCommitment" as keyof VolunteerApplicationType)}
+                            >
+                              Commitment
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="createdAt"
+                              currentSort={volunteerFilters.sortConfig.key as string}
+                              direction={volunteerFilters.getSortDirection("createdAt" as keyof VolunteerApplicationType)}
+                              onSort={() => volunteerFilters.handleSort("createdAt" as keyof VolunteerApplicationType)}
+                            >
+                              Submitted
+                            </SortableTableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -652,7 +730,7 @@ export default function Submissions() {
                       )}
                       <Button
                         variant="outline"
-                        onClick={handleExportContacts}
+                        onClick={() => handleExport("contact")}
                         disabled={!contacts?.data || contacts.data.length === 0}
                         data-testid="button-export-contacts"
                       >
@@ -699,11 +777,38 @@ export default function Submissions() {
                                 aria-label="Select all"
                               />
                             </TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Message</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Submitted</TableHead>
+                            <SortableTableHead
+                              sortKey="name"
+                              currentSort={contactFilters.sortConfig.key as string}
+                              direction={contactFilters.getSortDirection("name" as keyof Contact)}
+                              onSort={() => contactFilters.handleSort("name" as keyof Contact)}
+                            >
+                              Name
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="email"
+                              currentSort={contactFilters.sortConfig.key as string}
+                              direction={contactFilters.getSortDirection("email" as keyof Contact)}
+                              onSort={() => contactFilters.handleSort("email" as keyof Contact)}
+                            >
+                              Email
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="subject"
+                              currentSort={contactFilters.sortConfig.key as string}
+                              direction={contactFilters.getSortDirection("subject" as keyof Contact)}
+                              onSort={() => contactFilters.handleSort("subject" as keyof Contact)}
+                            >
+                              Subject
+                            </SortableTableHead>
+                            <SortableTableHead
+                              sortKey="createdAt"
+                              currentSort={contactFilters.sortConfig.key as string}
+                              direction={contactFilters.getSortDirection("createdAt" as keyof Contact)}
+                              onSort={() => contactFilters.handleSort("createdAt" as keyof Contact)}
+                            >
+                              Submitted
+                            </SortableTableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>

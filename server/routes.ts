@@ -26,11 +26,66 @@ import {
 import OpenAI from "openai";
 import passport from "passport";
 import { requireAuth } from "./auth";
+import { logActivity, toCSV } from "./utils";
+import { authLimiter, adminLimiter } from "./middleware/rateLimiter";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+// Configure multer for disk storage
+const uploadStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(process.cwd(), "uploads");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({
+  storage: uploadStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    }
+    cb(new Error("Only image files are allowed!"));
+  }
+});
+import { cacheMiddleware } from "./cache";
+import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
+  // Health check endpoint
+  app.get("/health", async (_req, res) => {
+    try {
+      // Check database connection
+      await db.select().from(storage.constructor.name as any).limit(1);
+      res.json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || "development"
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: "unhealthy",
+        error: "Database connection failed",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
 
-  app.post("/api/auth/login", passport.authenticate("local"), (req, res) => {
+  app.post("/api/auth/login", authLimiter, passport.authenticate("local"), (req, res) => {
     res.json({ success: true, user: req.user });
   });
 
@@ -567,7 +622,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     }
   });
 
-  app.get("/api/admin/dashboard-stats", requireAuth, async (req, res) => {
+  app.get("/api/admin/dashboard-stats", requireAuth, cacheMiddleware(300), async (req, res) => {
     try {
       const [blogCount, eventCount, partnerCount, mentorCount, volunteerCount, contactCount, studentsCount, matchesCount] = await Promise.all([
         storage.getBlogPostsCount(),
@@ -599,14 +654,156 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     }
   });
 
-  app.get("/api/admin/analytics/timeline", requireAuth, async (req, res) => {
+  app.get("/api/admin/dashboard-comparison", requireAuth, cacheMiddleware(300), async (req, res) => {
+    try {
+      const comparison = await storage.getComparisonMetrics();
+      res.json({ success: true, data: comparison });
+    } catch (error) {
+      console.error("Error fetching comparison metrics:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch comparison metrics" });
+    }
+  });
+
+  app.get("/api/admin/analytics/timeline", requireAuth, cacheMiddleware(900), async (req, res) => {
     try {
       const days = req.query.days ? parseInt(req.query.days as string) : 30;
-      const timeline = await storage.getDailySubmissionCounts(days);
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+
+      const timeline = await storage.getDailySubmissionCounts(days, startDate, endDate);
       res.json({ success: true, data: timeline });
     } catch (error) {
       console.error("Error fetching timeline analytics:", error);
       res.status(500).json({ success: false, message: "Failed to fetch timeline analytics" });
+    }
+  });
+
+  app.get("/api/admin/export/dashboard", requireAuth, async (req, res) => {
+    try {
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      const days = req.query.days ? parseInt(req.query.days as string) : 30;
+
+      const timeline = await storage.getDailySubmissionCounts(days, startDate, endDate);
+
+      const csv = toCSV(timeline);
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", `attachment; filename=dashboard-analytics-${new Date().toISOString().split('T')[0]}.csv`);
+      res.send(csv);
+
+      await logActivity(req, "Exported dashboard data", "analytics");
+    } catch (error) {
+      console.error("Error exporting dashboard data:", error);
+      res.status(500).json({ success: false, message: "Failed to export data" });
+    }
+  });
+
+  // Export endpoints for submissions
+  app.get("/api/admin/export/partners", requireAuth, async (req, res) => {
+    try {
+      const partners = await storage.getPartnerApplications();
+      const csv = toCSV(partners.map(p => ({
+        id: p.id,
+        name: p.name,
+        email: p.email,
+        phone: p.phone,
+        organizationName: p.organizationName,
+        organizationType: p.organizationType,
+        location: p.location,
+        partnershipGoals: p.partnershipGoals,
+        resourceContribution: Array.isArray(p.resourceContribution) ? p.resourceContribution.join('; ') : p.resourceContribution,
+        partnershipTimeline: p.partnershipTimeline,
+        createdAt: p.createdAt
+      })));
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", `attachment; filename=partner-applications-${new Date().toISOString().split('T')[0]}.csv`);
+      res.send(csv);
+
+      await logActivity(req, "Exported partner applications", "partners");
+    } catch (error) {
+      console.error("Error exporting partners:", error);
+      res.status(500).json({ success: false, message: "Failed to export partners" });
+    }
+  });
+
+  app.get("/api/admin/export/mentors", requireAuth, async (req, res) => {
+    try {
+      const mentors = await storage.getMentorApplications();
+      const csv = toCSV(mentors.map(m => ({
+        id: m.id,
+        name: m.name,
+        email: m.email,
+        phone: m.phone,
+        professionalTitle: m.professionalTitle,
+        expertiseAreas: Array.isArray(m.expertiseAreas) ? m.expertiseAreas.join('; ') : m.expertiseAreas,
+        yearsOfExperience: m.yearsOfExperience,
+        availability: Array.isArray(m.availability) ? m.availability.join('; ') : m.availability,
+        preferredFormat: m.preferredFormat,
+        ageGroupPreference: m.ageGroupPreference,
+        languages: Array.isArray(m.languages) ? m.languages.join('; ') : m.languages,
+        createdAt: m.createdAt
+      })));
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", `attachment; filename=mentor-applications-${new Date().toISOString().split('T')[0]}.csv`);
+      res.send(csv);
+
+      await logActivity(req, "Exported mentor applications", "mentors");
+    } catch (error) {
+      console.error("Error exporting mentors:", error);
+      res.status(500).json({ success: false, message: "Failed to export mentors" });
+    }
+  });
+
+  app.get("/api/admin/export/volunteers", requireAuth, async (req, res) => {
+    try {
+      const volunteers = await storage.getVolunteerApplications();
+      const csv = toCSV(volunteers.map(v => ({
+        id: v.id,
+        name: v.name,
+        email: v.email,
+        phone: v.phone,
+        skills: Array.isArray(v.skills) ? v.skills.join('; ') : v.skills,
+        availabilityFrequency: v.availabilityFrequency,
+        timeCommitment: v.timeCommitment,
+        locationFlexibility: v.locationFlexibility,
+        interestAreas: Array.isArray(v.interestAreas) ? v.interestAreas.join('; ') : v.interestAreas,
+        createdAt: v.createdAt
+      })));
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", `attachment; filename=volunteer-applications-${new Date().toISOString().split('T')[0]}.csv`);
+      res.send(csv);
+
+      await logActivity(req, "Exported volunteer applications", "volunteers");
+    } catch (error) {
+      console.error("Error exporting volunteers:", error);
+      res.status(500).json({ success: false, message: "Failed to export volunteers" });
+    }
+  });
+
+  app.get("/api/admin/export/contacts", requireAuth, async (req, res) => {
+    try {
+      const contacts = await storage.getContactSubmissions();
+      const csv = toCSV(contacts.map(c => ({
+        id: c.id,
+        name: c.name,
+        email: c.email,
+
+        message: c.message,
+        createdAt: c.createdAt
+      })));
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", `attachment; filename=contact-submissions-${new Date().toISOString().split('T')[0]}.csv`);
+      res.send(csv);
+
+      await logActivity(req, "Exported contact submissions", "contacts");
+    } catch (error) {
+      console.error("Error exporting contacts:", error);
+      res.status(500).json({ success: false, message: "Failed to export contacts" });
     }
   });
 
@@ -661,6 +858,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     try {
       const validatedData = insertBlogPostSchema.parse(req.body);
       const post = await storage.createBlogPost(validatedData);
+      await logActivity(req, "create_blog_post", "blog_post", post.id, { title: post.title });
       res.json({ success: true, data: post });
     } catch (error) {
       console.error("Error creating blog post:", error);
@@ -675,6 +873,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
       if (!post) {
         return res.status(404).json({ success: false, message: "Blog post not found" });
       }
+      await logActivity(req, "update_blog_post", "blog_post", post.id, { title: post.title });
       res.json({ success: true, data: post });
     } catch (error) {
       console.error("Error updating blog post:", error);
@@ -686,6 +885,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     try {
       const { id } = req.params;
       await storage.deleteBlogPost(id);
+      await logActivity(req, "delete_blog_post", "blog_post", id);
       res.json({ success: true, message: "Blog post deleted" });
     } catch (error) {
       console.error("Error deleting blog post:", error);
@@ -707,6 +907,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     try {
       const validatedData = insertEventSchema.parse(req.body);
       const event = await storage.createEvent(validatedData);
+      await logActivity(req, "create_event", "event", event.id, { title: event.title });
       res.json({ success: true, data: event });
     } catch (error) {
       console.error("Error creating event:", error);
@@ -721,6 +922,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
       if (!event) {
         return res.status(404).json({ success: false, message: "Event not found" });
       }
+      await logActivity(req, "update_event", "event", event.id, { title: event.title });
       res.json({ success: true, data: event });
     } catch (error) {
       console.error("Error updating event:", error);
@@ -732,6 +934,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     try {
       const { id } = req.params;
       await storage.deleteEvent(id);
+      await logActivity(req, "delete_event", "event", id);
       res.json({ success: true, message: "Event deleted" });
     } catch (error) {
       console.error("Error deleting event:", error);
@@ -797,6 +1000,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
         return res.status(400).json({ success: false, message: "Invalid request format" });
       }
       await storage.bulkDeletePartnerApplications(ids);
+      await logActivity(req, "bulk_delete_partner_applications", "partner_application", undefined, { count: ids.length });
       res.json({ success: true, message: "Partner applications deleted successfully" });
     } catch (error) {
       console.error("Error bulk deleting partner applications:", error);
@@ -811,6 +1015,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
         return res.status(400).json({ success: false, message: "Invalid request format" });
       }
       await storage.bulkDeleteMentorApplications(ids);
+      await logActivity(req, "bulk_delete_mentor_applications", "mentor_application", undefined, { count: ids.length });
       res.json({ success: true, message: "Mentor applications deleted successfully" });
     } catch (error) {
       console.error("Error bulk deleting mentor applications:", error);
@@ -825,6 +1030,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
         return res.status(400).json({ success: false, message: "Invalid request format" });
       }
       await storage.bulkDeleteVolunteerApplications(ids);
+      await logActivity(req, "bulk_delete_volunteer_applications", "volunteer_application", undefined, { count: ids.length });
       res.json({ success: true, message: "Volunteer applications deleted successfully" });
     } catch (error) {
       console.error("Error bulk deleting volunteer applications:", error);
@@ -839,6 +1045,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
         return res.status(400).json({ success: false, message: "Invalid request format" });
       }
       await storage.bulkDeleteContactSubmissions(ids);
+      await logActivity(req, "bulk_delete_contact_submissions", "contact_submission", undefined, { count: ids.length });
       res.json({ success: true, message: "Contact submissions deleted successfully" });
     } catch (error) {
       console.error("Error bulk deleting contact submissions:", error);
@@ -874,6 +1081,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     try {
       const validatedData = insertStudentSchema.parse(req.body);
       const student = await storage.createStudent(validatedData);
+      await logActivity(req, "create_student", "student", student.id, { name: student.name });
       res.json({ success: true, data: student });
     } catch (error) {
       console.error("Error creating student:", error);
@@ -888,6 +1096,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
       if (!student) {
         return res.status(404).json({ success: false, message: "Student not found" });
       }
+      await logActivity(req, "update_student", "student", student.id, { name: student.name });
       res.json({ success: true, data: student });
     } catch (error) {
       console.error("Error updating student:", error);
@@ -899,6 +1108,7 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     try {
       const { id } = req.params;
       await storage.deleteStudent(id);
+      await logActivity(req, "delete_student", "student", id);
       res.json({ success: true, message: "Student deleted" });
     } catch (error) {
       console.error("Error deleting student:", error);
@@ -964,6 +1174,92 @@ Always be helpful, accurate, and supportive of youth empowerment through technol
     } catch (error) {
       console.error("Error deleting mentor match:", error);
       res.status(500).json({ success: false, message: "Failed to delete mentor match" });
+    }
+  });
+
+  app.get("/api/admin/unread-counts", requireAuth, async (req, res) => {
+    try {
+      const counts = await storage.getRecentSubmissionCounts(24);
+      res.json({ success: true, data: counts });
+    } catch (error) {
+      console.error("Error fetching unread counts:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch unread counts" });
+    }
+  });
+
+  app.get("/api/admin/activity-logs", requireAuth, async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const logs = await storage.getActivityLogs(limit);
+      res.json({ success: true, data: logs });
+    } catch (error) {
+      console.error("Error fetching activity logs:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch activity logs" });
+    }
+  });
+
+  // Media Library Endpoints
+  app.post("/api/upload", requireAuth, upload.single("file"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: "No file uploaded" });
+      }
+
+      const url = `/uploads/${req.file.filename}`;
+
+      // Save file metadata to database
+      const mediaFile = await storage.createMedia({
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        url,
+      });
+
+      await logActivity(req, "Uploaded media file", "media", mediaFile.id);
+
+      res.json({ success: true, url, data: mediaFile });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ success: false, message: "Failed to upload file" });
+    }
+  });
+
+  app.get("/api/admin/media", requireAuth, async (req, res) => {
+    try {
+      const files = await storage.getMediaFiles();
+      res.json({ success: true, data: files });
+    } catch (error) {
+      console.error("Error fetching media files:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch media files" });
+    }
+  });
+
+  app.delete("/api/admin/media/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      // Get file info before deleting from DB
+      const files = await storage.getMediaFiles();
+      const file = files.find(f => f.id === id);
+
+      if (file) {
+        // Delete from database
+        await storage.deleteMedia(id);
+
+        // Delete physical file
+        const filePath = path.join(process.cwd(), "uploads", file.filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+
+        await logActivity(req, "Deleted media file", "media", id);
+      }
+
+      res.json({ success: true, message: "Media file deleted" });
+    } catch (error) {
+      console.error("Error deleting media file:", error);
+      res.status(500).json({ success: false, message: "Failed to delete media file" });
     }
   });
 

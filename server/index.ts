@@ -5,6 +5,9 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupAuth } from "./auth";
 import path from "path";
 import type { Server } from "http";
+import helmet from "helmet";
+import logger from "./logger";
+import { publicLimiter } from "./middleware/rateLimiter";
 
 declare module "http" {
   interface IncomingMessage {
@@ -13,6 +16,31 @@ declare module "http" {
 }
 
 const app = express();
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
+
+// Apply rate limiting to all routes
+app.use(publicLimiter);
+
+// Serve uploads directory
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
 setupAuth(app);
 
 app.use(
@@ -60,6 +88,10 @@ export async function setupApp() {
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+
+    // Log error
+    logger.error(`${status} - ${message} - ${_req.originalUrl} - ${_req.method} - ${_req.ip}`);
+
     res.status(status).json({ message });
   });
 

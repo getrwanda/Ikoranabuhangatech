@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -246,7 +247,11 @@ export default function BlogManagement() {
                         <FormItem>
                           <FormLabel>Content</FormLabel>
                           <FormControl>
-                            <Textarea {...field} placeholder="Full post content" rows={8} data-testid="input-content" />
+                            <RichTextEditor
+                              content={field.value}
+                              onChange={field.onChange}
+                              placeholder="Write your blog post content here..."
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

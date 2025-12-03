@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -128,6 +128,12 @@ export const mentorMatches = pgTable("mentor_matches", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const session = pgTable("session", {
+  sid: varchar("sid").primaryKey(),
+  sess: json("sess").notNull(),
+  expire: timestamp("expire").notNull(),
+});
+
 export const activityLogs = pgTable("activity_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id),
@@ -137,6 +143,16 @@ export const activityLogs = pgTable("activity_logs", {
   details: text("details"), // JSON string with additional details
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const media = pgTable("media", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  filename: text("filename").notNull(),
+  originalName: text("original_name").notNull(),
+  mimeType: text("mime_type").notNull(),
+  size: integer("size").notNull(),
+  url: text("url").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -275,3 +291,4 @@ export type Student = typeof students.$inferSelect;
 export type InsertMentorMatch = z.infer<typeof insertMentorMatchSchema>;
 export type MentorMatch = typeof mentorMatches.$inferSelect;
 export type ActivityLog = typeof activityLogs.$inferSelect;
+export type MediaFile = typeof media.$inferSelect;

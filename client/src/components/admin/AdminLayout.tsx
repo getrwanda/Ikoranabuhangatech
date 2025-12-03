@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,13 @@ import {
   LogOut,
   Menu,
   Settings,
+  History,
+  Image as ImageIcon,
 } from "lucide-react";
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { KeyboardShortcuts } from "@/components/admin/KeyboardShortcuts";
+import { NotificationBadge } from "@/components/admin/NotificationBadge";
+import { useQuery } from "@tanstack/react-query";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -22,16 +26,64 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [lastKey, setLastKey] = useState<string | null>(null);
+
+  // Poll for unread submission counts every 60 seconds
+  const { data: unreadCounts } = useQuery<{ success: boolean; data: { total: number } }>({
+    queryKey: ["/api/admin/unread-counts"],
+    refetchInterval: 60000, // Refetch every 60 seconds
+  });
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
     { icon: FileText, label: "Blog Posts", path: "/admin/blog" },
+    { icon: ImageIcon, label: "Media Library", path: "/admin/media" },
     { icon: Calendar, label: "Events", path: "/admin/events" },
     { icon: Users, label: "Students", path: "/admin/students" },
     { icon: Users, label: "Mentor Matching", path: "/admin/mentor-matching" },
     { icon: Users, label: "Submissions", path: "/admin/submissions" },
+    { icon: History, label: "Activity Log", path: "/admin/activity-log" },
     { icon: Settings, label: "Settings", path: "/admin/settings" },
   ];
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in input
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") {
+        return;
+      }
+
+      // Navigation shortcuts (g then ...)
+      if (e.key === "g") {
+        setLastKey("g");
+        // Clear after 1 second if no follow-up
+        setTimeout(() => setLastKey(null), 1000);
+        return;
+      }
+
+      if (lastKey === "g") {
+        if (e.key === "d") {
+          setLocation("/admin/dashboard");
+          setLastKey(null);
+        } else if (e.key === "s") {
+          setLocation("/admin/submissions");
+          setLastKey(null);
+        }
+      }
+
+      // Search shortcut (Ctrl+K)
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lastKey, setLocation]);
 
   const handleLogout = async () => {
     try {
@@ -57,6 +109,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-secondary/20">
+      <KeyboardShortcuts />
       <div className="flex">
         <aside
           className={cn(
@@ -89,7 +142,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <Link key={item.path} href={item.path}>
                   <a
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors relative",
                       location === item.path
                         ? "bg-primary text-white"
                         : "hover:bg-secondary"
@@ -103,6 +156,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     )}>
                       {item.label}
                     </span>
+                    {item.label === "Submissions" && unreadCounts?.data?.total ? (
+                      <NotificationBadge count={unreadCounts.data.total} />
+                    ) : null}
                   </a>
                 </Link>
               ))}

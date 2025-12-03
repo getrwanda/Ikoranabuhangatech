@@ -2,9 +2,21 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tool
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 
-export function SubmissionsOverTimeChart() {
+import { DateRange } from "react-day-picker";
+
+interface SubmissionsOverTimeChartProps {
+    dateRange?: DateRange;
+}
+
+export function SubmissionsOverTimeChart({ dateRange }: SubmissionsOverTimeChartProps) {
+    const queryParams = new URLSearchParams();
+    if (dateRange?.from) queryParams.set("startDate", dateRange.from.toISOString());
+    if (dateRange?.to) queryParams.set("endDate", dateRange.to.toISOString());
+
+    const url = `/api/admin/analytics/timeline?${queryParams.toString()}`;
+
     const { data: timelineData, isLoading } = useQuery<{ success: boolean; data: { date: string; count: number }[] }>({
-        queryKey: ["/api/admin/analytics/timeline"],
+        queryKey: [url],
     });
 
     if (isLoading) {

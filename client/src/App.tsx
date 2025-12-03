@@ -26,6 +26,8 @@ import Submissions from "@/pages/admin/Submissions";
 import StudentsManagement from "@/pages/admin/StudentsManagement";
 import MentorMatching from "@/pages/admin/MentorMatching";
 import AdminSettings from "@/pages/admin/Settings";
+import ActivityLogPage from "@/pages/admin/ActivityLog";
+import MediaLibrary from "@/pages/admin/MediaLibrary";
 
 function Router() {
   const [location] = useLocation();
@@ -46,10 +48,12 @@ function Router() {
         <Route path="/admin/login" component={AdminLogin} />
         <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/admin/blog" component={BlogManagement} />
+        <Route path="/admin/media" component={MediaLibrary} />
         <Route path="/admin/events" component={EventsManagement} />
         <Route path="/admin/students" component={StudentsManagement} />
         <Route path="/admin/mentor-matching" component={MentorMatching} />
         <Route path="/admin/submissions" component={Submissions} />
+        <Route path="/admin/activity-log" component={ActivityLogPage} />
         <Route path="/admin/settings" component={AdminSettings} />
         <Route component={NotFound} />
       </Switch>
