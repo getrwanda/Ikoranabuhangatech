@@ -1,0 +1,4 @@
+2026-01-15 16:00:24:024 [37mdebug[39m: [37mCache SET for /api/admin/dashboard-comparison (300s)[39m
+2026-01-15 16:00:26:026 [37mdebug[39m: [37mCache SET for /api/admin/dashboard-stats (300s)[39m
+2026-01-15 16:00:26:026 [37mdebug[39m: [37mCache SET for /api/admin/analytics/timeline?startDate=2025-12-16T14%3A00%3A22.415Z&endDate=2026-01-15T14%3A00%3A22.415Z (900s)[39m
+2026-01-15 16:04:43:443 [37mdebug[39m: [37mCache SET for /api/admin/analytics/timeline?startDate=2025-12-16T14%3A04%3A37.806Z&endDate=2026-01-15T14%3A04%3A37.806Z (900s)[39m
