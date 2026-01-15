@@ -35,8 +35,10 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// Apply rate limiting to all routes
-app.use(publicLimiter);
+// Apply rate limiting to all routes (skip in development for easier testing)
+if (process.env.NODE_ENV === 'production') {
+  app.use(publicLimiter);
+}
 
 // Serve uploads directory
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
