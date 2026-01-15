@@ -10,9 +10,9 @@ import {
   contactSubmissions,
   students,
   type InsertUser,
-  type InsertEvent,
   type InsertBlogPost
 } from "../shared/schema";
+import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { addDays, subDays } from "date-fns";
 
@@ -30,7 +30,7 @@ async function seed() {
     
     // Check if admin exists first
     const existingUser = await db.query.users.findFirst({
-        where: (users, { eq }) => eq(users.username, "admin")
+        where: eq(users.username, "admin")
     });
 
     if (!existingUser) {
@@ -42,7 +42,7 @@ async function seed() {
 
     // 2. Create Events
     console.log("Creating events...");
-    const sampleEvents: InsertEvent[] = [
+    const sampleEvents: (typeof events.$inferInsert)[] = [
       {
         title: "Introduction to Digital Literacy",
         description: "A beginner-friendly workshop covering the basics of computer usage, internet safety, and digital tools.",
@@ -113,8 +113,8 @@ async function seed() {
       }
     ];
 
-    await db.insert(blogPosts).values(samplePosts);
-    console.log(`✅ ${samplePosts.length} blog posts created`);
+    await db.insert(blogPosts).values(samplePosts).onConflictDoNothing();
+    console.log(`✅ Blog posts seeded (skipped if existing)`);
 
     // 4. Create Applications (Partners, Mentors, Volunteers)
     console.log("Creating applications...");
