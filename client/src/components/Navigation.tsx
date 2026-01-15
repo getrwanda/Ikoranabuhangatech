@@ -50,7 +50,7 @@ export function Navigation() {
             data-testid="link-home"
             aria-label="Ikoranabuhanga Rigezweho - Home"
           >
-            <img src={logoUrl} alt="Ikoranabuhanga Rigezweho Logo" className="h-10 w-auto" />
+            <img src={logoUrl} alt="Ikoranabuhanga Rigezweho Logo" className="h-12 w-auto" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
@@ -71,7 +71,7 @@ export function Navigation() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
@@ -87,7 +87,7 @@ export function Navigation() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              className="md:hidden h-11 w-11 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               onClick={() => setIsOpen(!isOpen)}
               data-testid="button-menu-toggle"
               aria-label={isOpen ? 'Close menu' : 'Open menu'}
@@ -99,7 +99,7 @@ export function Navigation() {
         </div>
 
         {isOpen && (
-          <div className="md:hidden border-t py-4 animate-in slide-in-from-top-4 duration-300">
+          <div className="md:hidden border-t py-4 animate-in slide-in-from-top-4 duration-300 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <nav className="flex flex-col gap-2" aria-label="Mobile navigation">
               {navLinks.map((link, index) => (
                 <Link key={link.path} href={link.path}>
