@@ -30,6 +30,7 @@ export default defineConfig(async () => ({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"), // ✅ match Express & Vercel
     emptyOutDir: true,
+    chunkSizeWarningLimit: 2000,
   },
   server: {
     fs: {
